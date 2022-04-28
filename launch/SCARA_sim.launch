@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<launch>
+    <arg name="model" default="$(find catch_k)/urdf/SCARA_sample.urdf" />
+    <arg name="rvizconfig" default="$(find catch_k)/config/SCARA_arm.rviz" />
+    
+    <include file="$(find gazebo_ros)/launch/empty_world.launch"/>
+    <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model" args="-param robot_description -urdf -model SCARA_sample" />
+    <param name="robot_description" textfile = "$(find catch_k)/urdf/SCARA_sample.urdf" />
+    <node name="SCARA_cal" pkg="catch_k" type="SCARA_cal" output = "screen"/>
+    <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
+    <node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rvizconfig) -f base_link" />
+    <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher"/>
+
+    <rosparam>
+        my_SCARA:
+            arm1_position_controller:
+                type: effort_controllers/JointPositionController
+                joint: stand_arm1
+                pid: {p: 10.0, i: 0.1, d: 0.01}            
+            arm2_position_controller:
+                type: effort_controllers/JointPositionController
+                joint: arm1_arm2
+                pid: {p: 10.0, i: 0.1, d: 0.01}        
+            joint_state_controller:
+                type: joint_state_controller/JointStateController
+                publish_rate: 10
+    </rosparam>
+
+    <node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false" output="screen" ns="/my_SCARA" args="arm1_position_controller arm2_position_controller joint_state_controller">
+        <remap from="/my_SCARA/joint_states" to="joint_states"/>
+    </node>
+</launch>
