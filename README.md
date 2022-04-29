@@ -6,6 +6,8 @@ Simulator for Catch_Robo_2022
 # 各ノードの説明
 
 ## SCARA_sim (SCARA_sim.cpp)
+### 開発ブランチ
+CATCH_simulator
 ### できること
 シミュレータ用のノード。現在はSCARAが位置指定でぐるぐる動くだけ。
 ### これからやること
