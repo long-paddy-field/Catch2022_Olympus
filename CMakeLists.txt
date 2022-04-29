@@ -205,9 +205,9 @@ include_directories(
 
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
-add_executable(SCARA_cal src/SCARA_cal.cpp)
+add_executable(SCARA_sim src/SCARA_cal.cpp)
 
 
-target_link_libraries(SCARA_cal
+target_link_libraries(SCARA_sim
   ${catkin_LIBRARIES}
 )

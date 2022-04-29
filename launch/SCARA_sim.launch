@@ -11,9 +11,8 @@
     <param name="robot_description" textfile="$(find Catch2022_sim)/urdf/SCARA_sample.urdf" />
    
    
-    <node name="SCARA_cal" pkg="Catch2022_sim" type="SCARA_cal" output="screen" />
+    <node name="SCARA_sim" pkg="Catch2022_sim" type="SCARA_sim" output="screen" />
     <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
-    <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher"/>
 
     <rosparam>
         my_SCARA:

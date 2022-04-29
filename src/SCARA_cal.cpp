@@ -9,24 +9,44 @@ const double pi = 3.1415;
 
 int main(int argc, char **argv)
 {
-    ros::init(argc, argv, "SCARA_cal");
+    ros::init(argc, argv, "SCARA_sim");
     ros::NodeHandle nh;
+    ros::Publisher rviz_pub = nh.advertise<sensor_msgs::JointState>("joint_states", 10);
     ros::Publisher arm1_pub = nh.advertise<std_msgs::Float64>("my_SCARA/arm1_position_controller/command", 10);
     ros::Publisher arm2_pub = nh.advertise<std_msgs::Float64>("my_SCARA/arm2_position_controller/command", 10);
 
     ros::Rate loop_rate(10);
     int count = 0;
 
-    std_msgs::Float64 arm_msg;
-    arm_msg.data = 0;
+    sensor_msgs::JointState rviz_msg;
 
+    std_msgs::Float64 arm_msg[2];
+
+    float arm1_data = 0;
+    float arm2_data = 0;
+   
     while (ros::ok())
     {
-        arm_msg.data = (float)count/200;
-        arm1_pub.publish(arm_msg);
-        arm2_pub.publish(arm_msg);
+
+        arm1_data = (float)count / 100;
+        arm2_data = (float)count / -100;
+
+        rviz_msg.header.stamp = ros::Time::now();
+        rviz_msg.name.resize(2);
+        rviz_msg.position.resize(2);
+        rviz_msg.name[0] = "stand_arm1";
+        rviz_msg.name[1] = "arm1_arm2";
+        rviz_msg.position[0] = arm1_data;
+        rviz_msg.position[1] = arm2_data;
+
+        arm_msg[0].data = arm1_data;
+        arm_msg[1].data = arm2_data;
+
+        arm1_pub.publish(arm_msg[0]);
+        arm2_pub.publish(arm_msg[1]);
+        rviz_pub.publish(rviz_msg);
         count++;
-        ROS_INFO("data: %f", arm_msg.data);
+        ROS_INFO("data: %f", arm_msg[0].data);
         ros::spinOnce();
         loop_rate.sleep();
     }
