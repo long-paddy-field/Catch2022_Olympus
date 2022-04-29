@@ -1,14 +1,18 @@
 <?xml version="1.0"?>
 <launch>
-    <arg name="model" default="$(find catch_k)/urdf/SCARA_sample.urdf" />
-    <arg name="rvizconfig" default="$(find catch_k)/config/SCARA_arm.rviz" />
-    
+    <!-- rvizにモデルを表示 -->
+    <arg name="model" default="$(find Catch2022_sim)/urdf/SCARA_sample.urdf" />
+    <arg name="rvizconfig" default="$(find Catch2022_sim)/config/SCARA_arm.rviz" />
+    <node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rvizconfig) -f base_link" />
+
+    <!-- gazeboに表示 -->
     <include file="$(find gazebo_ros)/launch/empty_world.launch"/>
     <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model" args="-param robot_description -urdf -model SCARA_sample" />
-    <param name="robot_description" textfile = "$(find catch_k)/urdf/SCARA_sample.urdf" />
-    <node name="SCARA_cal" pkg="catch_k" type="SCARA_cal" output = "screen"/>
+    <param name="robot_description" textfile="$(find Catch2022_sim)/urdf/SCARA_sample.urdf" />
+   
+   
+    <node name="SCARA_cal" pkg="Catch2022_sim" type="SCARA_cal" output="screen" />
     <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
-    <node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rvizconfig) -f base_link" />
     <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher"/>
 
     <rosparam>

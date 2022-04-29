@@ -116,7 +116,7 @@
     <joint name="arm2_hand" type="fixed">
         <parent link="arm2_link"/>
         <child link="hand_link"/>
-        <origin xyz="0.5 0 0" rpy = "0 0 0"/>
+        <origin xyz="0.5 0 -0.01" rpy = "0 0 0"/>
     </joint>
 
     <transmission name ="arm1_trans">

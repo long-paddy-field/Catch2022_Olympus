@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>catch_k</name>
+  <name>Catch2022_sim</name>
   <version>0.0.0</version>
-  <description>The catch_k package</description>
+  <description>The Catch2022_sim package</description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag -->
   <!-- Example:  -->
