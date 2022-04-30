@@ -216,7 +216,7 @@
     </transmission>
     <transmission name="arm2_trans">
         <type>transmission_interface/SimpleTransmission</type>
-        <joint name="stand_arm2">
+        <joint name="arm1_arm2">
             <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
         </joint>
         <actuator name="arm2_motor">

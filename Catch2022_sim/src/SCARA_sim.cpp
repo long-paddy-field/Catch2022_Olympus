@@ -12,43 +12,32 @@ int main(int argc, char **argv)
     ros::init(argc, argv, "SCARA_sim");
     ros::NodeHandle nh;
     ros::Publisher rviz_pub = nh.advertise<sensor_msgs::JointState>("joint_states", 10);
-    ros::Publisher arm1_pub = nh.advertise<std_msgs::Float64>("my_SCARA/arm1_position_controller/command", 10);
-    ros::Publisher arm2_pub = nh.advertise<std_msgs::Float64>("my_SCARA/arm2_position_controller/command", 10);
-    ros::Publisher linear_pub = nh.advertise<std_msgs::Float64>("my_SCARA/linear_position_controller/command", 10);
-    ros::Publisher wrist_pub = nh.advertise<std_msgs::Float64>("my_SCARA/wrist_position_controller/command", 10);
 
     ros::Rate loop_rate(10);
-    int count = 0;
 
     sensor_msgs::JointState rviz_msg;
 
-    std_msgs::Float64 arm_msg[2];
+    int counter = 0;
 
-    float arm1_data = 0;
-    float arm2_data = 0;
-   
+    rviz_msg.name.resize(4);
+    rviz_msg.position.resize(4);
+
+    rviz_msg.name[0] = "stand_arm1";
+    rviz_msg.name[1] = "arm1_arm2";
+    rviz_msg.name[2] = "arm2_linear";
+    rviz_msg.name[3] = "linear_wrist";
+
     while (ros::ok())
     {
-
-        arm1_data = (float)count / 100;
-        arm2_data = (float)count / -100;
-
         rviz_msg.header.stamp = ros::Time::now();
-        rviz_msg.name.resize(4);
-        rviz_msg.position.resize(2);
-        rviz_msg.name[0] = "stand_arm1";
-        rviz_msg.name[1] = "arm1_arm2";
-        rviz_msg.position[0] = arm1_data;
-        rviz_msg.position[1] = arm2_data;
 
-        arm_msg[0].data = arm1_data;
-        arm_msg[1].data = arm2_data;
+        rviz_msg.position[0] = (float)counter / 50;
+        rviz_msg.position[1] = (float)counter / 50;
+        rviz_msg.position[2] = (float)counter / -1000;
+        rviz_msg.position[3] = (float)counter / 50;
 
-        arm1_pub.publish(arm_msg[0]);
-        arm2_pub.publish(arm_msg[1]);
+        counter++;
         rviz_pub.publish(rviz_msg);
-        count++;
-        ROS_INFO("data: %f", arm_msg[0].data);
         ros::spinOnce();
         loop_rate.sleep();
     }
