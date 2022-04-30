@@ -52,26 +52,5 @@ int main(int argc, char **argv)
         ros::spinOnce();
         loop_rate.sleep();
     }
-
-    //     while (ros::ok())
-    //     {
-    //         sensor_msgs::JointState js0;
-    //         js0.header.stamp = ros::Time::now();
-    //         js0.name.resize(2);
-    //         js0.name[0] = "stand_arm1";
-    //         js0.name[1] = "arm1_arm2";
-    //         js0.position.resize(2);
-    //         js0.position[0] = pi/2;
-    //         js0.position[1] = -1*pi/2;
-
-    //         ROS_INFO("pub_0: %f" ,js0.position[0]);
-    //         ROS_INFO("pub_1: %f" ,js0.position[1]);
-
-    // //        joint_pub.publish(js0);
-    //         count++;
-
-    //         ros::spinOnce();
-    //         loop_rate.sleep();
-    //     }
     return 0;
 }
