@@ -14,6 +14,8 @@ int main(int argc, char **argv)
     ros::Publisher rviz_pub = nh.advertise<sensor_msgs::JointState>("joint_states", 10);
     ros::Publisher arm1_pub = nh.advertise<std_msgs::Float64>("my_SCARA/arm1_position_controller/command", 10);
     ros::Publisher arm2_pub = nh.advertise<std_msgs::Float64>("my_SCARA/arm2_position_controller/command", 10);
+    ros::Publisher linear_pub = nh.advertise<std_msgs::Float64>("my_SCARA/linear_position_controller/command", 10);
+    ros::Publisher wrist_pub = nh.advertise<std_msgs::Float64>("my_SCARA/wrist_position_controller/command", 10);
 
     ros::Rate loop_rate(10);
     int count = 0;
@@ -32,7 +34,7 @@ int main(int argc, char **argv)
         arm2_data = (float)count / -100;
 
         rviz_msg.header.stamp = ros::Time::now();
-        rviz_msg.name.resize(2);
+        rviz_msg.name.resize(4);
         rviz_msg.position.resize(2);
         rviz_msg.name[0] = "stand_arm1";
         rviz_msg.name[1] = "arm1_arm2";

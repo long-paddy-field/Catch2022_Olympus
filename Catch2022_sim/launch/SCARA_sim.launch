@@ -13,7 +13,7 @@
    
     <node name="SCARA_sim" pkg="Catch2022_sim" type="SCARA_sim" output="screen" />
     <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
-
+    <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher"/>
     <rosparam>
         my_SCARA:
             arm1_position_controller:
@@ -23,13 +23,21 @@
             arm2_position_controller:
                 type: effort_controllers/JointPositionController
                 joint: arm1_arm2
-                pid: {p: 10.0, i: 0.1, d: 0.01}        
+                pid: {p: 10.0, i: 0.1, d: 0.01}    
+            linear_position_controller:
+                type: effort_controllers/JointPositionController
+                joint: arm2_linear
+                pid: {p: 10.0, i: 0.1, d: 0.01}    
+            wrist_position_controller:
+                type: effort_controllers/JointPositionController
+                joint: linear_wrist
+                pid: {p: 10.0, i: 0.1, d: 0.01}    
             joint_state_controller:
                 type: joint_state_controller/JointStateController
                 publish_rate: 10
     </rosparam>
 
-    <node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false" output="screen" ns="/my_SCARA" args="arm1_position_controller arm2_position_controller joint_state_controller">
+    <node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false" output="screen" ns="/my_SCARA" args="arm1_position_controller arm2_position_controller linear_position_controller wrist_position_controller joint_state_controller">
         <remap from="/my_SCARA/joint_states" to="joint_states"/>
     </node>
 </launch>

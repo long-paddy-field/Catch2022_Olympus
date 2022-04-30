@@ -17,7 +17,11 @@
             </geometry>
             <origin xyz="0 0 0" rpy="0 0 0" />
         </collision>
-        
+        <inertial>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <mass value="100"/>
+            <inertia ixx="1.5" ixy="0" ixz="0" iyx="0" iyy="4.8333" iyz="0" izx="0" izy="0" izz="4.8333"/>
+        </inertial>
     </link>
     <link name="arm1_link">
         <visual>
@@ -29,6 +33,18 @@
                 <color rgba="0.0 0.0 1.0 1.0" />
             </material>
         </visual>
+        <collision>
+            <geometry>
+                <box size="0.1 0.7 0.1" />
+            </geometry>
+            <origin xyz="0 0.3 0" rpy="0 0 0" />
+        </collision>
+        <inertial>
+            <origin xyz="0 0.3 0" rpy="0 0 0" />
+            <mass value="1.5" />
+            <inertia ixx="0.1975" ixy="0" ixz="0" iyx="0" iyy="0.0025" iyz="0" izx="0" izy="0" izz="0.1975" />
+        </inertial>
+
     </link>
     <link name="arm2_link">
         <visual>
@@ -40,6 +56,17 @@
                 <color rgba="0.0 1.0 0.0 1.0" />
             </material>
         </visual>
+        <collision>
+            <geometry>
+                <box size="0.1 0.65 0.1" />
+            </geometry>
+            <origin xyz="0 0.275 0" rpy="0 0 0" />
+        </collision>
+        <inertial>
+            <origin xyz="0 0.275 0" rpy="0 0 0" />
+            <mass value="1.5" />
+            <inertia ixx="0.1675" ixy="0" ixz="0" iyx="0" iyy="0.0025" iyz="0" izx="0" izy="0" izz="0.1675" />
+        </inertial>
     </link>
     <link name="linear_link">
         <visual>
@@ -51,6 +78,17 @@
                 <color rgba="1.0 0.5 0.0 1.0" />
             </material>
         </visual>
+        <collision>
+            <geometry>
+                <box size="0.1 0.1 0.4" />
+            </geometry>
+            <origin xyz="0 0 0" rpy="0 0 0" />           
+        </collision>
+        <inertial>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <mass value="1.3" />
+            <inertia ixx="0.0184167" ixy="0" ixz="0" iyx="0" iyy="0.0184167" iyz="0" izx="0" izy="0" izz="0.00216667" />
+        </inertial>
     </link>
     <link name="wrist_link">
         <visual>
@@ -62,6 +100,17 @@
                 <color rgba="1.0 1.0 1.0 1.0" />
             </material>
         </visual>
+        <collision>
+            <geometry>
+                <box size="0.3 0.1 0.04" />
+            </geometry>
+            <origin xyz="0 0 0" rpy="0 0 0" />            
+        </collision>
+        <inertial>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <mass value="0.1" />
+            <inertia ixx="0.0000966666" ixy="0" ixz="0" iyx="0" iyy="0.000763333" iyz="0" izx="0" izy="0" izz="0.000833333" />
+        </inertial>
     </link>
     <link name="righthand_link">
         <visual>
@@ -73,6 +122,17 @@
                 <color rgba="1.0 0.0 0.0 1.0" />
             </material>
         </visual>
+        <collision>
+            <geometry>
+                <cylinder radius="0.05" length="0.01" />
+            </geometry>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+        </collision>
+        <inertial>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <mass value="0.3" />
+            <inertia ixx="0.00019" ixy="0" ixz="0" iyx="0" iyy="0.00019" iyz="0" izx="0" izy="0" izz="0.000375" />
+        </inertial>
     </link>
     <link name="lefthand_link">
         <visual>
@@ -84,6 +144,17 @@
                 <color rgba="1.0 0.0 0.0 1.0" />
             </material>
         </visual>
+        <collision>
+            <geometry>
+                <cylinder radius="0.05" length="0.01" />
+            </geometry>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+        </collision>
+        <inertial>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <mass value="0.3" />
+            <inertia ixx="0.00019" ixy="0" ixz="0" iyx="0" iyy="0.00019" iyz="0" izx="0" izy="0" izz="0.000375" />
+        </inertial>
     </link>
 
     <!-- define joints -->
@@ -133,5 +204,74 @@
         <origin xyz="-0.1 0 -0.025" rpy="0 0 0" />
     </joint>
 
+    <transmission name="arm1_trans">
+        <type>transmission_interface/SimpleTransmission</type>
+        <joint name="stand_arm1">
+            <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+        </joint>
+        <actuator name="arm1_motor">
+            <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+            <mechanismReduction>1</mechanismReduction>
+        </actuator>
+    </transmission>
+    <transmission name="arm2_trans">
+        <type>transmission_interface/SimpleTransmission</type>
+        <joint name="stand_arm2">
+            <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+        </joint>
+        <actuator name="arm2_motor">
+            <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+            <mechanismReduction>1</mechanismReduction>
+        </actuator>
+    </transmission>
+    <transmission name="linear_trans">
+        <type>transmission_interface/SimpleTransmission</type>
+        <joint name="arm2_linear">
+            <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+        </joint>
+        <actuator name="linear_motor">
+            <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+            <mechanismReduction>1</mechanismReduction>
+        </actuator>
+    </transmission>
+    <transmission name="wrist_trans">
+        <type>transmission_interface/SimpleTransmission</type>
+        <joint name="linear_wrist">
+            <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+        </joint>
+        <actuator name="wrist_motor">
+            <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+            <mechanismReduction>1</mechanismReduction>
+        </actuator>
+    </transmission>
 
+    <!-- make gazebo plugin -->
+    <gazebo reference="stand_link">
+        <material>Gazebo/White</material>
+    </gazebo>
+    <gazebo reference="arm1_link">
+        <material>Gazebo/Blue</material>
+    </gazebo>
+    <gazebo reference="arm2_link">
+        <material>Gazebo/Green</material>
+    </gazebo>
+    <gazebo reference="linear_link">
+        <material>Gazebo/Orange</material>
+    </gazebo>
+    <gazebo reference="wrist_link">
+        <material>Gazebo/White</material>
+    </gazebo>
+    <gazebo reference="righthand_link">
+        <material>Gazebo/Red</material>
+    </gazebo>
+    <gazebo reference="lefthand_link">
+        <material>Gazebo/Red</material>
+    </gazebo>
+    <gazebo>
+        <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
+            <robotNamespace>/my_SCARA</robotNamespace>
+            <robotSimType>gazebo_ros_control/DefaultRobotHWSim</robotSimType>
+            <legacyModeNS>true</legacyModeNS>
+        </plugin>
+    </gazebo>
 </robot>
