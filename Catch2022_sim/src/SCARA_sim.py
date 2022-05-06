@@ -28,6 +28,7 @@ def simulator():
     rviz_msg.name[3] = "linear_wrist"
 
     while not rospy.is_shutdown():
+        rviz_cmd = [cnt,cnt,cnt,cnt]
         rviz_msg.header.stamp = rospy.Time.now()
         rviz_msg.position = rviz_cmd     
         rviz_pub.publish(rviz_msg)

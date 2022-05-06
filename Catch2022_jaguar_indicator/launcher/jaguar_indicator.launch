@@ -1,0 +1,7 @@
+<launch>
+
+    <node name="jaguar_indicator" pkg="Catch2022_jaguar_indicator" type="jaguar_indicator.py" output = "screen">
+        <param name="channel" value="4"/>
+        <param name="loop_rate" value="20"/>
+    </node>
+</launch>
