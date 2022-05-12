@@ -1,0 +1,26 @@
+digraph G {
+node [shape=box];
+"base_link" [label="base_link"];
+"stand_link" [label="stand_link"];
+"arm1_link" [label="arm1_link"];
+"arm2_link" [label="arm2_link"];
+"linear_link" [label="linear_link"];
+"wrist_link" [label="wrist_link"];
+"lefthand_link" [label="lefthand_link"];
+"righthand_link" [label="righthand_link"];
+node [shape=ellipse, color=blue, fontcolor=blue];
+"base_link" -> "base_stand" [label="xyz: 0 0 0.15 \nrpy: 0 -0 0"]
+"base_stand" -> "stand_link"
+"stand_link" -> "stand_arm1" [label="xyz: 0 0 0.2 \nrpy: 0 -0 0"]
+"stand_arm1" -> "arm1_link"
+"arm1_link" -> "arm1_arm2" [label="xyz: 0 0.6 0.1 \nrpy: 0 -0 0"]
+"arm1_arm2" -> "arm2_link"
+"arm2_link" -> "arm2_linear" [label="xyz: 0 0.65 0 \nrpy: 0 -0 0"]
+"arm2_linear" -> "linear_link"
+"linear_link" -> "linear_wrist" [label="xyz: 0 0 -0.22 \nrpy: 0 -0 0"]
+"linear_wrist" -> "wrist_link"
+"wrist_link" -> "wrist_left" [label="xyz: -0.1 0 -0.025 \nrpy: 0 -0 0"]
+"wrist_left" -> "lefthand_link"
+"wrist_link" -> "wrist_right" [label="xyz: 0.1 0 -0.025 \nrpy: 0 -0 0"]
+"wrist_right" -> "righthand_link"
+}

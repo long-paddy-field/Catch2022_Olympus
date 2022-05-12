@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 from numpy import float64
 from rosdep2 import RosdepInternalError
 import rospy
@@ -34,7 +35,7 @@ def simulator():
     rviz_msg.name[1] = "arm1_arm2"
     rviz_msg.name[2] = "arm2_linear"
     rviz_msg.name[3] = "linear_wrist"
-
+    rospy.loginfo("enter main routine")
     while not rospy.is_shutdown():
         rviz_msg.header.stamp = rospy.Time.now()
         rviz_msg.position = rviz_cmd
