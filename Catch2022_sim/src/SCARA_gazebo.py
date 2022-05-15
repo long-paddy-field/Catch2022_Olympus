@@ -45,6 +45,7 @@ def simulator():
 
 if __name__ == "__main__" :
     try:
+        
         simulator()
     
     except RosdepInternalError: pass
