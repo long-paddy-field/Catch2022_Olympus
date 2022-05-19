@@ -1,4 +1,51 @@
 #!/usr/bin/env python3
+# import rospy
+# import cv2
+# from std_msgs.msg import String
+# from sensor_msgs.msg import Image
+# from cv_bridge import CvBridge, CvBridgeError
+# import sys
+# import numpy
+
+# bridge = CvBridge()
+
+# class jaguar_indicator:
+#     def __init__(self):
+#         jag_sub = rospy.Subscriber("camera/image_raw",Image,self.rcv_image_callback)
+#         self.update()
+    
+#     def rcv_image_callback(self,ros_image):
+#         rospy.loginfo("jaguar_indicator : recieve image")
+#         global bridge
+#         try:
+#             self.cv_image= bridge.imgmsg_to_cv2(ros_image)
+#             rospy.loginfo("jaguar_indicator : success convert")
+#             (rows, cols, channels) = self.cv_image.shape
+#         except CvBridgeError as e:
+#             rospy.loginfo("jaguar_indicator : fail to convert")
+        
+        
+#     def update(self):
+#         rospy.loginfo("jaguar_indicator : enter main routine")
+#         self.loop_rate = rospy.Rate(10)
+#         while not rospy.is_shutdown():
+#             cv2.imshow('img', self.cv_image)
+#             self.loop_rate.sleep()
+#             pass
+            
+# def main(args):
+#     try:
+#         rospy.init_node("jaguar_indicator")
+#         func = jaguar_indicator()
+#     except:
+#         rospy.loginfo("jaguar_indicator : something wrong")
+#     finally:
+#         rospy.loginfo("jagura_indicator : process end")
+
+        
+# if __name__ == '__main__':
+#     main(sys.argv)
+
 import rospy
 import cv2
 from cv2 import THRESH_BINARY
@@ -24,10 +71,10 @@ class jaguar_indicator:
 #        self.tf_listener = tf.TransformListener()
         rospy.loginfo("loaded tf")
         self.capture.set(cv2.CAP_PROP_FOURCC,cv2.VideoWriter_fourcc('M','J','P','G'))
-        self.wait_secs = int(1000 / self.capture.get(cv2.CAP_PROP_FPS))
-        
         self.WIDTH = self.capture.get(cv2.CAP_PROP_FRAME_WIDTH)
         self.r=rospy.Rate(_loop_rate)
+        rospy.loginfo("FLAG")
+    
         self.update()        
     
     def getcircle(self):
@@ -61,7 +108,7 @@ class jaguar_indicator:
             # (trans, rot) = self.tf_listener.lookupTransform('/base_link', '/camera', rospy.Time(0))
             # self.pic_to_m = 2*(trans[2]-jaguar_hight) * math.tan(math.radians(camera_angle/2))/self.WIDTH
             got_circle = np.array([0,0,0])
-            # got_circle = self.getcircle()
+            got_circle = self.getcircle()
             # self.locate_pub.publish(got_circle)
             rospy.loginfo("X : ",got_circle[0]," Y : ",got_circle[1]," R : ",got_circle[2])
             self.r.sleep()    
@@ -71,7 +118,7 @@ class jaguar_indicator:
 
 if __name__ == "__main__" :
     try:
-        camera_channel = rospy.get_param("~channel",4)
+        camera_channel = rospy.get_param("~channel",1)
         loop_rate = rospy.get_param("~loop_rate",20)
         rospy.loginfo("program started!")
         func = jaguar_indicator(camera_channel,loop_rate)
