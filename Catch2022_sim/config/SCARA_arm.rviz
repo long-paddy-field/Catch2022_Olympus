@@ -78,6 +78,11 @@ Visualization Manager:
           Alpha: 1
           Show Axes: false
           Show Trail: false
+        camera_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
         lefthand_link:
           Alpha: 1
           Show Axes: false
@@ -120,6 +125,8 @@ Visualization Manager:
           Value: true
         base_link:
           Value: true
+        camera_link:
+          Value: true
         lefthand_link:
           Value: true
         linear_link:
@@ -142,6 +149,8 @@ Visualization Manager:
             arm1_link:
               arm2_link:
                 linear_link:
+                  camera_link:
+                    {}
                   wrist_link:
                     lefthand_link:
                       {}
@@ -193,9 +202,9 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.6953970193862915
+      Pitch: -0.04960265010595322
       Target Frame: <Fixed Frame>
-      Yaw: 0.5135819911956787
+      Yaw: 2.738588333129883
     Saved: ~
 Window Geometry:
   Displays:

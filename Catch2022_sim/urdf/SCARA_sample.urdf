@@ -106,7 +106,11 @@
             </geometry>
             <origin xyz="0 0 0" />
         </collision>
-
+        <inertial>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <mass value="0.168" />
+            <inertia ixx="0.00009646" ixy="0" ixz="0" iyx="0" iyy="0.00014959" iyz="0" izx="0" izy="0" izz="0.000194278" />
+        </inertial>        
     </link>
     <link name="wrist_link">
         <visual>
@@ -224,7 +228,7 @@
     <joint name="linear_camera" type="fixed">
         <parent link="linear_link"/>
         <child link="camera_link"/>
-        <origin xyz="0 0.097  0"/>
+        <origin xyz="0 0.0715  0" rpy="1.57 0 0"/>
     </joint>
 
     <transmission name="arm1_trans">
