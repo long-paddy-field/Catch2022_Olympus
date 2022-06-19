@@ -1,0 +1,10 @@
+<launcher>
+    <arg name = "mode" default = "actual"/>
+    <group if="$(eval mode == actual)">
+
+    </group>
+    <group if="$(eval mode == simulate)">
+        <include file="$(find Catch2022_sim)/launch/SCARA_sim.launch"/>
+    </group>
+
+</launcher>
