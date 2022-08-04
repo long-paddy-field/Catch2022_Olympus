@@ -22,9 +22,8 @@ class rviz_simulator():
         self.rviz_msg.name = ['stand_arm1', 'arm1_arm2', 'arm2_linear', 'linear_wrist']
         rospy.loginfo("SCARA_rviz : registered names")
         
-        self.rviz_msg.position = [0, 0, 0, 0]
+        self.rviz_msg.position = [-2*math.pi/3, 2*math.pi/3, 0, 0]
         rospy.loginfo("SCARA_rviz : registered position")
-
 
         self.update()
     
