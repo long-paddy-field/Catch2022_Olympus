@@ -1,0 +1,3 @@
+<launch>
+    <node name="device" pkg="Catch2022_device" type="device.py" output="screen"/>
+</launch>
