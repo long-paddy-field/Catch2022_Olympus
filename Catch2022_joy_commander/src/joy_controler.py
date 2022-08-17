@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 #役割：ジョイコン入力の読み取り、各部への伝達（ボタン）
 
+import queue
 from numpy import empty
 import rospy
 from sensor_msgs.msg import Joy
@@ -30,6 +31,9 @@ class JOY_CONTROLER():
         self.pub_start_flag = rospy.Publisher("start_flag",Empty,queue_size = 1)
         self.pub_emergence_flag = rospy.Publisher("emergence_cmd",Empty,queue_size = 1)
         self.pub_isHandy = rospy.Publisher("isHandy",Bool,queue_size = 1)
+        self.pub_grab_cmd = rospy.Publisher("grab_cmd",Empty,queue_size = 1)
+        self.pub_release_cmd = rospy.Publisher("release_cmd",Empty,queue_size = 1)
+        
         
         
         rospy.Subscriber("joy",Joy,self.joy_callback,queue_size = 1)
