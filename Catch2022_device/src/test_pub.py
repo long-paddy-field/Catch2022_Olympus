@@ -14,9 +14,9 @@ def main():
     global port
     rospy.init_node('test_pub')
     rospy.loginfo("hello,world")
-    uart=serial.Serial(port,115200)
+    # uart=serial.Serial(port,115200)
 
-    # pub0 = rospy.Publisher('move_cmd', Float32MultiArray, queue_size=1)
+    pub0 = rospy.Publisher('move_cmd', Float32MultiArray, queue_size=1)
     # pub1 = rospy.Publisher('servo_angle', Float32, queue_size=1)
     # pub2 = rospy.Publisher('stepper_state', Int8, queue_size=1)
     # pub3 = rospy.Publisher('pump_state', Bool, queue_size=1)
@@ -24,18 +24,19 @@ def main():
     
     rate = rospy.Rate(100)
 
-    msg = Float32MultiArray(data=[1, 2])
+    msg = Float32MultiArray(data=[125, 125])
 
     while not rospy.is_shutdown():
-        # pub0.publish(msg)
+        pub0.publish(msg)
+        rospy.loginfo(msg.data)
         # pub1.publish(msg)
         # pub2.publish(msg)
         # pub3.publish(msg)
         
         message = 'Test message from pyserial\n'
-        uart.write(message.encode('ascii'))
+        # uart.write(message.encode('ascii'))
 
-        rospy.loginfo("hello,world")
+        # rospy.loginfo("hello,world")
         rate.sleep()
 
 if __name__=="__main__":
