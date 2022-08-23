@@ -111,6 +111,14 @@ class JOY_CONTROLER():
                         rospy.loginfo("Right")
                         f_msg = Float32(data=self.rot_ratio)
                         self.pubRotate.publish(f_msg)
+                        
+                    if self.buttons[7] and not self.buttons[6]:
+                        rospy.loginfo("grab")
+                        self.pub_grab_cmd.publish()
+                    elif self.buttons[6] and not self.buttons[7]:
+                        rospy.loginfo("release")
+                        self.pub_release_cmd.publish()
+                        
                     
             self.r.sleep()
 

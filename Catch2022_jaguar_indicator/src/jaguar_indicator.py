@@ -39,6 +39,7 @@ class Jaguar_Indicator:
             rospy.loginfo("Circle is not found")
             no_array = np.array([0,0,0])
             cv2.imshow("img",frame)
+            # cv2.imshow("bin",dst_bi)
             return no_array
         
         # cv2.circle(frame,(200,200),10,(255,0,0),2)
