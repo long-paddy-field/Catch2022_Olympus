@@ -22,23 +22,25 @@ class device():
         self.loop()
 
     def move_cmd_callback(self,msg):
-        move_cmd = msg.data
-        motor=struct.pack('<ff',*move_cmd)
-        self.uart.write(motor)
-        rospy.loginfo(motor)
+        self.move_cmd = msg.data
+        # rospy.loginfo(uart_msg)
+        # motor=struct.pack('<ff',*move_cmd)
+        # self.uart.write(motor)
+        # rospy.loginfo(motor)
 
 
     def servo_angle_callback(self,msg):
-        pass
+        self.servo_angle=msg.data
+
 
     def stepper_state_callback(self,msg):
-        pass
+        self.stepper_state=msg.data.to_bytes(1,'little')
 
     def pump_state_callback(self,msg):
-        pass
+        self.pump_state=msg.data
 
     def emergency_callback(self,msg):
-        pass
+        self.emergency=msg.data
 
     def setup(self):
         global port
@@ -58,15 +60,26 @@ class device():
         self.sub_pump_state = rospy.Subscriber(
             'pump_state', Bool, self.pump_state_callback, queue_size=1)
         self.sub_emergency = rospy.Subscriber(
-            'emergency', Empty, self.emergency_callback, queue_size=1)
+            'emergency', Int8, self.emergency_callback, queue_size=1)
 
         self.msg = Float32MultiArray(data=[1, 2])
+        
+        #変数の初期化
+        self.move_cmd=[0x00,0x00]
+        self.servo_angle=0x00
+        self.stepper_state=b'\x00'
+        self.pump_state=b'\x00'
+        self.emergency=b'\x00'
 
     def loop(self):
         while not rospy.is_shutdown():
             # rospy.loginfo("hello,world")
             # self.sendSerial()
             # uart.write(message.encode('ascii'))
+            # uart_msg=struct.pack("<fffc??c",*self.move_cmd,self.servo_angle,self.stepper_state,self.pump_state,self.emergency,0xFF)
+            uart_msg=struct.pack("<fffc??c",*self.move_cmd,self.servo_angle,self.stepper_state,self.pump_state,self.emergency,b'\xFF')
+            rospy.loginfo(uart_msg)
+            self.uart.write(uart_msg)
             self.rate.sleep()
 
     def sendSerial():

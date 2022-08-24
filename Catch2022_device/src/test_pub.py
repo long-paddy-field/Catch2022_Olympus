@@ -17,23 +17,28 @@ def main():
     # uart=serial.Serial(port,115200)
 
     pub0 = rospy.Publisher('move_cmd', Float32MultiArray, queue_size=1)
-    # pub1 = rospy.Publisher('servo_angle', Float32, queue_size=1)
-    # pub2 = rospy.Publisher('stepper_state', Int8, queue_size=1)
-    # pub3 = rospy.Publisher('pump_state', Bool, queue_size=1)
-    # pub4 = rospy.Publisher('emergency', Empty, queue_size=1)
+    pub1 = rospy.Publisher('servo_angle', Float32, queue_size=1)
+    pub2 = rospy.Publisher('stepper_state', Int8, queue_size=1)
+    pub3 = rospy.Publisher('pump_state', Bool, queue_size=1)
+    pub4 = rospy.Publisher('emergency', Int8, queue_size=1)
     
     rate = rospy.Rate(100)
 
-    msg = Float32MultiArray(data=[125, 125])
+    move_cmd = Float32MultiArray(data=[40, 125])
+    servo_angle=Float32(data=90)
+    stepper_state=Int8(data=3)
+    pump_state=Bool(data=1)
+    emergency=Int8(data=0)
 
     while not rospy.is_shutdown():
-        pub0.publish(msg)
-        rospy.loginfo(msg.data)
-        # pub1.publish(msg)
-        # pub2.publish(msg)
-        # pub3.publish(msg)
+        pub0.publish(move_cmd)
+        # rospy.loginfo(msg.data)
+        pub1.publish(servo_angle)
+        pub2.publish(stepper_state)
+        pub3.publish(pump_state)
+        pub4.publish(emergency)
         
-        message = 'Test message from pyserial\n'
+        # message = 'Test/ message from pyserial\n'
         # uart.write(message.encode('ascii'))
 
         # rospy.loginfo("hello,world")
