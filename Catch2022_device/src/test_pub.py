@@ -27,15 +27,15 @@ def main():
     move_cmd = Float32MultiArray(data=[40, 125])
     servo_angle=Float32(data=90)
     stepper_state=Int8(data=3)
-    pump_state=Bool(data=1)
+    pmp_state=Bool(data=1)
     emergency=Int8(data=0)
-
+    pub1.publish(servo_angle)
     while not rospy.is_shutdown():
         pub0.publish(move_cmd)
         # rospy.loginfo(msg.data)
-        pub1.publish(servo_angle)
+        # pub1.publish(servo_angle)
         pub2.publish(stepper_state)
-        pub3.publish(pump_state)
+        pub3.publish(pmp_state)
         pub4.publish(emergency)
         
         # message = 'Test/ message from pyserial\n'
