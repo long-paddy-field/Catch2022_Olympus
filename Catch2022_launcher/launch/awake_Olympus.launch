@@ -1,6 +1,6 @@
 <launch>
     <node name = "joy_node" pkg = "joy" type = "joy_node"/>
-    <node name = "joy_controler" pkg = "Catch2022_joy_commander" type = "joy_controler.py" output = "screen"/>
+    <node name = "joy_controller" pkg = "Catch2022_joy_commander" type = "joy_controller.py" output = "screen"/>
 
     <node name = "smach_viewer" pkg = "smach_viewer" type = "smach_viewer.py"/>
     <node name = "task_manager" pkg = "Catch2022_task_manager" type = "task_manager.py" output = "screen"/>
