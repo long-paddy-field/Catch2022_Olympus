@@ -106,12 +106,12 @@ class JOY_CONTROLLER():
                     self.pub_start_flag.publish()
                 
                 if self.buttons[11]:                        #自動手動切り替え
-                    self.is_Handy = not self.is_Handy
-                    self.pub_is_Handy.publish(self.is_Handy)
+                    self.is_Handy = not self.is_Handy               
                     if self.is_Handy:
                         rospy.loginfo("change auto -> hand")
                     else :
                         rospy.loginfo("change handy -> auto")
+                self.pub_is_Handy.publish(self.is_Handy)
                         
             if not len(self.buttons) == 0 and self.buttons[8]:                         #緊急停止
                 self.pub_emergence_cmd.publish(self.emergence_cmd)
