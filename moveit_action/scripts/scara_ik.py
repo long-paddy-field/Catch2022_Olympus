@@ -3,6 +3,7 @@
 import rospy
 import numpy as np
 from sensor_msgs.msg import JointState
+from std_msgs.msg import String
 from std_msgs.msg import Float32MultiArray
 from math import pi
 import math
@@ -24,10 +25,16 @@ class Scara():
         self.J=np.array([[1,0],[0,1]])
         self.pub_move_cmd = rospy.Publisher("move_cmd",Float32MultiArray,queue_size = 100)
         rospy.Subscriber("current_angle",Float32MultiArray,self.current_angle_callback,queue_size = 100)
-        rospy.Subscriber("target_location",Float32MultiArray,self.target_location_callback,queue_size = 100)
+        rospy.Subscriber("target_location",Float32MultiArray,self.target_location_callback,queue_size = 100),
+        rospy.Subscriber("field_color",String,self.color_callback,queue_size=100)
         self.update()
         
-        
+    def color_callback(self,msg):
+        if msg.data == "Red":
+            self.sign = 1
+        elif msg.data == "Blue":
+            self.sign = -1
+                
 
     def target_location_callback(self,msg):
         rospy.loginfo("nya")
