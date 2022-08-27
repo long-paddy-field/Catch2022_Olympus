@@ -1,18 +1,94 @@
 #!/usr/bin/env python3
+from email.header import Header
+from shutil import move
 import rospy
-from std_msgs.msg import String
+from std_msgs.msg import Float32MultiArray
+from std_msgs.msg import Float32
+from std_msgs.msg import Int32MultiArray
+from sensor_msgs.msg import JointState
+from std_msgs.msg import Int8
+from std_msgs.msg import Bool
+from std_msgs.msg import Empty
+from cobs import cobs
+import serial
+import struct
 
-def main():
+port = "/dev/ttyUSB0"
+
+
+class device():
+    def __init__(self):
+        self.setup()
+        self.loop()
+
+    def move_cmd_callback(self,msg):
+        move_cmd = msg.data
+        motor=struct.pack('<ff',*move_cmd)
+        self.uart.write(motor)
+        rospy.loginfo(motor)
+
+
+    def servo_angle_callback(self,msg):
+        pass
+
+    def stepper_state_callback(self,msg):
+        pass
+
+    def pump_state_callback(self,msg):
+        pass
+
+    def emergency_callback(self,msg):
+        pass
+
+    def setup(self):
+        global port
+        self.uart = serial.Serial(port, 115200)
+        self.pub0 = rospy.Publisher('current_angle', JointState, queue_size=1)
+        self.pub1 = rospy.Publisher(
+            'is_grabbed', Int32MultiArray, queue_size=1)
+        self.rate = rospy.Rate(100)
+
+        # subscriberの宣言
+        self.sub_move_cmd = rospy.Subscriber(
+            'move_cmd', Float32MultiArray, self.move_cmd_callback, queue_size=1)
+        self.sub_servo_angle = rospy.Subscriber(
+            'servo_angle', Float32, self.servo_angle_callback, queue_size=1)
+        self.sub_stepper_state = rospy.Subscriber(
+            'stepper_state', Int8, self.stepper_state_callback, queue_size=1)
+        self.sub_pump_state = rospy.Subscriber(
+            'pump_state', Bool, self.pump_state_callback, queue_size=1)
+        self.sub_emergency = rospy.Subscriber(
+            'emergency', Empty, self.emergency_callback, queue_size=1)
+
+        self.msg = Float32MultiArray(data=[1, 2])
+
+    def loop(self):
+        while not rospy.is_shutdown():
+            # rospy.loginfo("hello,world")
+            # self.sendSerial()
+            # uart.write(message.encode('ascii'))
+            self.rate.sleep()
+
+    def sendSerial():
+        pass
+
+    def receiveSerial(self):
+        # 受信と整形
+        currentAngle = JointState()
+        currentAngle.header = Header()
+        currentAngle.name = ['stand_arm1', 'arm1_arm2']
+        currentAngle.position = [0, 0]  # 角度換算して入れる
+        isGrabbed = Int32MultiArray(data=[1, 1])
+        self.pub0.publish(currentAngle)
+        self.pub1.publish(isGrabbed)
+
+
+if __name__ == "__main__":
+    # try:
     rospy.init_node('device')
-    pub=rospy.Publisher('device',String,queue_size=10)
-    rate=rospy.Rate(10)
-
-    while not rospy.is_shutdown():
-        msg="hello, world!"
-        pub.publish(msg)
-        rate.sleep()
-
-
-
-if __name__=="__main__":
-    main()
+    rospy.loginfo("device : node is activated")
+    device = device()
+    # except:
+    #     rospy.loginfo("device : something wrong")
+    # finally:
+    #     rospy.loginfo("device : process end")
