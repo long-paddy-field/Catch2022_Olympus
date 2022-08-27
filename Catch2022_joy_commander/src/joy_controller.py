@@ -52,8 +52,7 @@ class JOY_CONTROLLER():
         rospy.loginfo("joy_controller : end setting")
         
     def joy_callback(self,msg):
-        rospy.loginfo("nyaqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq")
-        self.left_axes = [-1*msg.axes[0],msg.axes[1]]
+        self.left_axes  = [-1*msg.axes[0],msg.axes[1]]
         self.right_axes = [-1*msg.axes[2],msg.axes[3]]
         self.cross_axes = [-1*msg.axes[4],msg.axes[5]]
         self.buttons = msg.buttons
