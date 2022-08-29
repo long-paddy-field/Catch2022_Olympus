@@ -1,3 +1,4 @@
 [submodule "executive_smach_visualization"]
 	path = executive_smach_visualization
 	url = https://github.com/InigoMoreno/executive_smach_visualization.git
+	ignore = all
