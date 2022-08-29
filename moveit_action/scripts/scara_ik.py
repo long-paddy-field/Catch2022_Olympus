@@ -3,11 +3,11 @@
 import rospy
 import numpy as np
 from sensor_msgs.msg import JointState
+from std_msgs.msg import Bool
 from std_msgs.msg import String
 from std_msgs.msg import Float32MultiArray
 from math import pi
 import math
-
 
 class Scara():
     def __init__(self):
@@ -26,13 +26,13 @@ class Scara():
         self.pub_move_cmd = rospy.Publisher("move_cmd",Float32MultiArray,queue_size = 100)
         rospy.Subscriber("current_angle",Float32MultiArray,self.current_angle_callback,queue_size = 100)
         rospy.Subscriber("target_location",Float32MultiArray,self.target_location_callback,queue_size = 100),
-        rospy.Subscriber("field_color",String,self.color_callback,queue_size=100)
+        rospy.Subscriber("is_blue",Bool,self.color_callback,queue_size=100)
         self.update()
         
     def color_callback(self,msg):
-        if msg.data == "Red":
+        if msg.data == False:
             self.sign = 1
-        elif msg.data == "Blue":
+        elif msg.data == True:
             self.sign = -1
                 
 
@@ -73,7 +73,7 @@ class Scara():
             if self.work_flag == True:
                 if cnt <= self.h * self.t0:
                     next_dist = self.a*(2*cnt-1)/(2*(self.h**2))
-                    next_r = (next_dist/self.distance)*self.er  
+                    self.next_r = (next_dist/self.distance)*self.er
                     self.next_theta = np.dot(np.linalg.inv(self.J),next_r) 
                     cnt = cnt + 1
                 elif cnt <= self.h * self.t0*2:
@@ -86,11 +86,13 @@ class Scara():
                     cnt = 1
                     self.pub_move_cmd.publish(data=[self.end_theta1,self.end_theta2])
                     rospy.loginfo("end")
-
-            self.target_theta = (180/math.pi)*(self.next_theta+self.current_theta)+np.array([[35],[138]])
+            
+            # self.target_theta = (180/math.pi)*(self.next_theta+self.current_theta)+np.array([[35],[138]])
+            self.next_pos =  (self.next_r + self.current)
             # rospy.loginfo("target_theta")
             # rospy.loginfo(self.current_theta)
-            f_msg = Float32MultiArray(data = [self.target_theta[0,0],self.target_theta[1,0]])
+            f_msg = Float32MultiArray(data = [self.next_pos[0,0],self.next_pos[1,0]])
+            # f_msg = Float32MultiArray(data = [self.target_theta[0,0],self.target_theta[1,0]])
             self.pub_move_cmd.publish(f_msg)    
             print(f_msg)   
             self.r.sleep()
