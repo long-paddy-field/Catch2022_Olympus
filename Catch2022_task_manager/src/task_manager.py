@@ -3,19 +3,39 @@
 from email.header import Header
 from std_msgs.msg import Int8MultiArray
 from std_msgs.msg import Empty
+from std_msgs.msg import Bool
 from sensor_msgs.msg import JointState
 from trajectory_msgs.msg import JointTrajectory
 import rospy
 import smach
 import smach_ros
 
+
 class Task1_Init(smach.State): #諸々の初期化待機
     def __init__(self):
         rospy.loginfo("task_manager : Task1_Init is activated")
         self.is_started = False
+        self.jaguar_pos_x = [0,0,0,0,0,0,0,0]
+        self.jaguar_pos_y = [0,0,0,0,0,0,0,0]
+        self.box_pos_x = [0,0,0,0]
+        self.box_pos_y = [0,0,0,0]
         smach.State.__init__(self,outcomes=['done'])
         rospy.Subscriber("start_flag",Empty,self.start_flag_callback,queue_size = 1)
+        rospy.Subscriber("is_blue",Bool,self.is_blue_callback,queue_size=1)
         self.r = rospy.Rate(30)
+    
+    def is_blue_callback(self,msg):
+        if msg.data == True:
+            self.jaguar_pos_x = [0,0,0,0,0,0,0,0]
+            self.jaguar_pos_y = [0,0,0,0,0,0,0,0]
+            self.box_pos_x = [0,0,0,0]
+            self.box_pos_y = [0,0,0,0]
+        elif msg.data == False:
+            self.jaguar_pos_x = [0,0,0,0,0,0,0,0]
+            self.jaguar_pos_y = [0,0,0,0,0,0,0,0]
+            self.box_pos_x = [0,0,0,0]
+            self.box_pos_y = [0,0,0,0]
+
         
     def start_flag_callback(self,msg):
         self.is_started = not self.is_started
