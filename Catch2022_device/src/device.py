@@ -12,6 +12,7 @@ from sensor_msgs.msg import JointState
 from std_msgs.msg import Int8
 from std_msgs.msg import Bool
 from std_msgs.msg import Empty
+from std_msgs.msg import Header
 from cobs import cobs
 import serial
 import struct
@@ -125,6 +126,17 @@ class device():
             return 0
         else:
             return arg
+
+    def rviz_simulator(self,msg):
+        self.rviz_pub = rospy.Publisher("joint_states",JointState,queue_size=100)
+        self.rviz_msg = JointState() 
+        self.rviz_cmd = []
+        
+        self.rviz_msg.header = Header()
+        self.rviz_msg.name = ['stand_arm1','arm1_arm2','arm2_linear','linear_wrist']
+        self.move_cmd_theta = self.cartesian_to_theta(self.move_cmd)
+        self.rviz_msg.position = (self.move_cmd_theta[0],self.move_cmd_theta[1])
+        self.rviz_pub.publish(self.rviz_msg)
 
 
 if __name__ == "__main__":
