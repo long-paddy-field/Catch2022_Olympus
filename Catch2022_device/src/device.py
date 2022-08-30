@@ -45,17 +45,17 @@ class device():
     def emergency_callback(self, msg):
         self.emergency = msg.data
 
-    def field_color_callback(self, msg):
+    def is_blue_callback(self, msg):
         if msg.data == True:
-            self.sign = 1
-        else:
             self.sign = -1
+        else:
+            self.sign = 1
 
     def setup(self):
         global port
         self.uart = serial.Serial(port, 115200)
-        self.pub0 = rospy.Publisher('current_angle', JointState, queue_size=1)
-        self.pub1 = rospy.Publisher('is_grabbed', Int32MultiArray, queue_size=1)
+        self.pub1 = rospy.Publisher('is_grabbed', Int32MultiArray, queue_size=1100)
+        self.pub_current_location = rospy.Publisher('current_position',Float32MultiArray,queue_size=100)
         self.rate = rospy.Rate(100)
         self.l1 = 0.6
         self.l2 = 0.3
@@ -67,7 +67,7 @@ class device():
         self.sub_stepper_state = rospy.Subscriber('stepper_state', Int8, self.stepper_state_callback, queue_size=1)
         self.sub_pump_state = rospy.Subscriber('pump_state', Bool, self.pump_state_callback, queue_size=1)
         self.sub_emergency = rospy.Subscriber('emergency', Int8, self.emergency_callback, queue_size=1)
-        self.sub_color_field = rospy.Subscriber('field_color', Bool, self.field_color_callback, queue_size=100)
+        self.sub_color_field = rospy.Subscriber('is_blue', Bool, self.is_blue_callback, queue_size=100)
         self.msg = Float32MultiArray(data=[1, 2])
 
         # 変数の初期化
@@ -94,8 +94,8 @@ class device():
         msg = struct.unpack("<ff?c")
         current_angle = Float32MultiArray(data=[msg[0], msg[1]])
         self.theta_to_cartesian([0.5, 0.5])
-        is_grabbed = Bool(data=msg[3])
-        self.pub0.publish(current_angle)
+        is_grabbed = Bool(data=msg[2])
+        self.pub_current_location.publish(current_angle)
         self.pub1.publish(is_grabbed)
 
     def theta_to_cartesian(self, theta: List[float]):
