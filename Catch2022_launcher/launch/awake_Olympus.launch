@@ -4,4 +4,11 @@
 
     <node name = "smach_viewer" pkg = "smach_viewer" type = "smach_viewer.py"/>
     <node name = "task_manager" pkg = "Catch2022_task_manager" type = "task_manager.py" output = "screen"/>
+
+    <include file = "$(find Catch2022_webGUI)/launch/webGUI.launch"/>
+
+    <node name="device" pkg="Catch2022_device" type="device.py" output="screen"/>
+
+    <include file = "$(find Catch2022_jaguar_indicator)/launch/jaguar_indicator.launch"/>
+
 </launch>
