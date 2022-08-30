@@ -1,10 +1,7 @@
-<launcher>
-    <arg name = "mode" default = "actual"/>
-    <group if="$(eval mode == actual)">
+<launch>
+    <node name = "joy_node" pkg = "joy" type = "joy_node"/>
+    <node name = "joy_controller" pkg = "Catch2022_joy_commander" type = "joy_controller.py" output = "screen"/>
 
-    </group>
-    <group if="$(eval mode == simulate)">
-        <include file="$(find Catch2022_sim)/launch/SCARA_sim.launch"/>
-    </group>
-
-</launcher>
+    <node name = "smach_viewer" pkg = "smach_viewer" type = "smach_viewer.py"/>
+    <node name = "task_manager" pkg = "Catch2022_task_manager" type = "task_manager.py" output = "screen"/>
+</launch>
