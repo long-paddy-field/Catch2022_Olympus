@@ -1,40 +1,48 @@
 #!/usr/bin/env python3
 
 from email.header import Header
+import queue
 from std_msgs.msg import Int8MultiArray
 from std_msgs.msg import Empty
 from std_msgs.msg import Bool
 from sensor_msgs.msg import JointState
 from trajectory_msgs.msg import JointTrajectory
+from std_msgs.msg import Float32MultiArray
 import rospy
 import smach
 import smach_ros
+
+jaguar_pos_x = [0,0,0,0,0,0,0,0]
+jaguar_pos_y = [0,0,0,0,0,0,0,0]
+box_pos_x = [0,0,0,0]
+box_pos_y = [0,0,0,0]
+is_Handy = False
 
 
 class Task1_Init(smach.State): #諸々の初期化待機
     def __init__(self):
         rospy.loginfo("task_manager : Task1_Init is activated")
         self.is_started = False
-        self.jaguar_pos_x = [0,0,0,0,0,0,0,0]
-        self.jaguar_pos_y = [0,0,0,0,0,0,0,0]
-        self.box_pos_x = [0,0,0,0]
-        self.box_pos_y = [0,0,0,0]
         smach.State.__init__(self,outcomes=['done'])
         rospy.Subscriber("start_flag",Empty,self.start_flag_callback,queue_size = 1)
         rospy.Subscriber("is_blue",Bool,self.is_blue_callback,queue_size=1)
         self.r = rospy.Rate(30)
     
     def is_blue_callback(self,msg):
+        global jaguar_pos_x
+        global jaguar_pos_y
+        global box_pos_x
+        global box_pos_y
         if msg.data == True:
-            self.jaguar_pos_x = [0,0,0,0,0,0,0,0]
-            self.jaguar_pos_y = [0,0,0,0,0,0,0,0]
-            self.box_pos_x = [0,0,0,0]
-            self.box_pos_y = [0,0,0,0]
+            jaguar_pos_x = [0,0,0,0,0,0,0,0]
+            jaguar_pos_y = [0,0,0,0,0,0,0,0]
+            box_pos_x = [0,0,0,0]
+            box_pos_y = [0,0,0,0]
         elif msg.data == False:
-            self.jaguar_pos_x = [0,0,0,0,0,0,0,0]
-            self.jaguar_pos_y = [0,0,0,0,0,0,0,0]
-            self.box_pos_x = [0,0,0,0]
-            self.box_pos_y = [0,0,0,0]
+            jaguar_pos_x = [0,0,0,0,0,0,0,0]
+            jaguar_pos_y = [0,0,0,0,0,0,0,0]
+            box_pos_x = [0,0,0,0]
+            box_pos_y = [0,0,0,0]
 
         
     def start_flag_callback(self,msg):
@@ -51,30 +59,25 @@ class Task2_SeekWork(smach.State): #じゃがりこ探しに行く
     def __init__(self):
         smach.State.__init__(self,outcomes=['done','completed'])
         rospy.Subscriber("grab_cmd",Empty,self.grab_cmd_callback,queue_size = 1)
-        self.target_pub = rospy.Publisher("target_location",JointState,queue_size = 1)
+        self.target_pub = rospy.Publisher("target_location",Float32MultiArray,queue_size = 1)
         self.end_flag = False
         self.task_counter = 0
-        self.target_stand_arm1 = [0,0,0,0,0,0,0,0,0,0]
-        self.target_arm1_arm2 = [0,0,0,0,0,0,0,0,0,0]
-        self.target_arm2_linear = [0,0,0,0,0,0,0,0,0,0]
-        self.target_linear_wrist = [0,0,0,0,0,0,0,0,0,0]
         self.r = rospy.Rate(30)
         
     def grab_cmd_callback(self,msg):
         self.end_flag = True
     
     def execute(self, ud):
+        global jaguar_pos_x
+        global jaguar_pos_y
+        global box_pos_x
+        global box_pos_y        
         rospy.loginfo("task_manager : Task2_SeekWork is activated")
-        if self.task_counter < 10 :   
-            self.target_msg = JointState()
-            self.target_msg.header = Header()
-            self.target_msg.name = ['stand_arm1', 'arm1_arm2', 'arm2_linear', 'linear_wrist']
-            self.target_msg.position = [self.target_stand_arm1[self.task_counter],
-                                        self.target_arm1_arm2[self.task_counter],
-                                        self.target_arm2_linear[self.task_counter],
-                                        self.target_linear_wrist[self.task_counter]]
-            
-            self.target_pub.publish(self.target_msg)
+        if self.task_counter < 10 : 
+            if is_Handy == False:  
+                self.target_msg = Float32MultiArray()
+                self.target_msg.data = [jaguar_pos_x[self.task_counter],jaguar_pos_y[self.task_counter]]
+                self.target_pub.publish(self.target_msg)
             while not rospy.is_shutdown():
                 if self.end_flag:
                     rospy.loginfo("task_manager : Task2_SeekWork is ended")
@@ -132,28 +135,27 @@ class Task4_SeekBox(smach.State):
         rospy.loginfo("task_manager : Task4_SeekBox is activated")
         smach.State.__init__(self,outcomes=['done'])
         rospy.Subscriber("release_cmd",Empty,queue_size = 1)
-        self.target_pub = rospy.Publisher("target_location",JointState,queue_size = 1)
+        self.target_pub = rospy.Publisher("target_location",Float32MultiArray,queue_size = 1)
 
         self.is_released = False
-        self.task_counter = 0
-        self.target_stand_arm1 = [0,0,0,0,0,0,0,0,0,0]
-        self.target_arm1_arm2 = [0,0,0,0,0,0,0,0,0,0]
-        self.target_arm2_linear = [0,0,0,0,0,0,0,0,0,0]
-        self.target_linear_wrist = [0,0,0,0,0,0,0,0,0,0]        
+        self.task_counter = 0      
         self.r = rospy.Rate(30)
         
     def release_cmd_callback(self,msg):
         self.is_released = True
         
     def execute(self, ud):
-        self.target_msg = JointState()
-        self.target_msg.header = Header()
-        self.target_msg.name = ['stand_arm1', 'arm1_arm2', 'arm2_linear', 'linear_wrist']
-        self.target_msg.position = [self.target_stand_arm1[self.task_counter],
-                                    self.target_arm1_arm2[self.task_counter],
-                                    self.target_arm2_linear[self.task_counter],
-                                    self.target_linear_wrist[self.task_counter]]
+        global jaguar_pos_x
+        global jaguar_pos_y
+        global box_pos_x
+        global box_pos_y
+        global is_Handy
         
+        if is_Handy == False:
+            self.target_msg = Float32MultiArray()
+            self.target_msg.data = [box_pos_x[self.task_counter],
+                                        box_pos_y[self.task_counter]]
+                                    
         self.target_pub.publish(self.target_msg)
         
         while not rospy.is_shutdown():
@@ -164,11 +166,15 @@ class Task4_SeekBox(smach.State):
                 return 'done'
             self.r.sleep()
         
-        
+def is_handy_callback(msg):
+    global is_Handy
+    is_Handy = msg.data
             
 def main():
     rospy.init_node("task_manager")
      
+    rospy.Subscriber('is_handy',Bool,is_handy_callback,queue_size = 100)
+    
     sm_top = smach.StateMachine(outcomes=['succeeded'])
     with sm_top:
         smach.StateMachine.add('Init',Task1_Init(),transitions={'done':'SeekWork'})
