@@ -23,7 +23,7 @@ class JOY_CONTROLLER():
         self.pub_move_cmd       = rospy.Publisher("move_cmd",Float32MultiArray,queue_size = 1)
         self.pub_right_axes     = rospy.Publisher("right_axes",Float32MultiArray,queue_size = 1)
         self.pub_is_blue        = rospy.Publisher("is_blue",Bool,queue_size = 1)       # フィールドの色を設定
-        self.pub_pmp_state      = rospy.Publisher("pmp_state",Bool,queue_size = 1)
+        self.pub_pmp_state      = rospy.Publisher("pmp_state",Bool,queue_size = 1)     # 真で吸う
         self.pub_grab_cmd       = rospy.Publisher("grab_cmd",Empty,queue_size = 1)     # 掴む
         self.pub_release_cmd    = rospy.Publisher("release_cmd",Empty,queue_size = 1)  # 離す
         self.pub_servo_cmd      = rospy.Publisher("servo_cmd",Bool,queue_size = 1)     # 0 でまっすぐ 1 で垂直
@@ -32,15 +32,13 @@ class JOY_CONTROLLER():
         self.pub_start_flag     = rospy.Publisher("start_flag",Empty,queue_size = 1)   # スタート
         self.pub_is_Handy       = rospy.Publisher("is_handy",Bool,queue_size = 1)      # 手動自動切り替え
         
-        self.pub_stepper_state   = rospy.Publisher("stepper_state",Int8,queue_size = 1)
-    
         rospy.Subscriber("joy", Joy,self.joy_callback,queue_size = 100)
-        rospy.Subscriber("current_position",Float32MultiArray,self.current_position_callback,queue_size=100)
+        # rospy.Subscriber("current_position",Float32MultiArray,self.current_position_callback,queue_size=100)
         
         self.right_axes     = list()
         self.buttons        = list()
         self.is_blue        = Bool()
-        self.servo_cmd      = Int8()
+        self.servo_cmd      = Bool()
         self.step_cmd       = Int8()
         self.emergence_cmd  = Int8()
         self.is_Handy       = Bool()
@@ -49,7 +47,7 @@ class JOY_CONTROLLER():
         self.current_position = list()
         self.next_position  = list()        
         self.is_blue.data       = False
-        self.servo_cmd.data     = 0
+        self.servo_cmd.data     = False
         self.step_cmd.data      = 0
         self.emergence_cmd      = 0xff
         self.is_Handy           = False
@@ -62,8 +60,8 @@ class JOY_CONTROLLER():
         self.right_axes     = [-1*msg.axes[2],msg.axes[3]]
         self.buttons        = msg.buttons
         
-    def current_position_callback(self,msg):
-        self.current_position = msg.data
+    # def current_position_callback(self,msg):
+    #     self.current_position = msg.data
         
     def update(self):
         rospy.loginfo("joy_controller : main routine")
@@ -93,15 +91,7 @@ class JOY_CONTROLLER():
                         self.pub_release_cmd.publish()
                         b_msg = Bool(data = False)
                         self.pub_pmp_state(b_msg)
-                        
-                    if self.buttons[4] and not self.buttons[5]: #サーボCCW
-                        self.servo_cmd.data = 1
-                        self.pub_servo_cmd.publish(self.servo_cmd)
-                        
-                    if self.buttons[5] and not self.buttons[4]: #サーボCW
-                        self.servo_cmd.data = -1
-                        self.pub_servo_cmd.publish(self.servo_cmd)
-                        
+                                                
                     if self.buttons[6] and not self.buttons[7]: #ステップ上昇
                         self.step_cmd.data = 1
                         self.pub_step_cmd.publish(self.step_cmd)
@@ -109,6 +99,10 @@ class JOY_CONTROLLER():
                     if self.buttons[7] and not self.buttons[6]: #ステップ下降
                         self.step_cmd.data = -1
                         self.pub_step_cmd.publish(self.step_cmd)
+                
+                    if self.buttons[10]:                        #サーボ駆動
+                        self.servo_cmd = not self.servo_cmd
+                        self.pub_servo_cmd.publish(self.servo_cmd)
                 
                 if self.buttons[9]:                         #動作開始
                     self.pub_start_flag.publish()
