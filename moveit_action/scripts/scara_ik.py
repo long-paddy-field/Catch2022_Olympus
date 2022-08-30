@@ -24,7 +24,7 @@ class Scara():
         self.start = np.array([[0],[0]])
         self.J=np.array([[1,0],[0,1]])
         self.pub_move_cmd = rospy.Publisher("move_cmd",Float32MultiArray,queue_size = 100)
-        rospy.Subscriber("current_angle",Float32MultiArray,self.current_angle_callback,queue_size = 100)
+        rospy.Subscriber("current_position",Float32MultiArray,self.current_position_callback,queue_size = 100)
         rospy.Subscriber("target_location",Float32MultiArray,self.target_location_callback,queue_size = 100),
         rospy.Subscriber("is_blue",Bool,self.color_callback,queue_size=100)
         self.update()
@@ -47,14 +47,14 @@ class Scara():
         self.end_theta2 = -self.sign*(pi-math.acos((self.l1**2+self.l2**2-np.linalg.norm(self.target)**2)/(2*self.l1*self.l2)))
         self.end_theta = np.array([[self.end_theta1],[self.end_theta2]])
     
-    def current_angle_callback(self,msg):
+    def current_position_callback(self,msg):
         self.current_theta1 = (msg.data[0]-35) * pi / 180
         self.current_theta2 = (msg.data[1]-138) * pi / 180
         self.current_theta = np.array([[self.current_theta1],[self.current_theta2]])
         self.current_x = self.l1 * math.cos (self.current_theta1) + self.l2 * math.cos (self.current_theta1 + self.current_theta2)
         self.current_y = self.l1 * math.sin (self.current_theta1) + self.l2 * math.sin (self.current_theta1 + self.current_theta2)
         self.current = np.array([[self.current_x],[self.current_y]])
-        self.J = np.matrix([[self.poi(-self.current_y),self.poi(-self.l2*math.sin(self.current_theta1+self.current_theta2))],[self.poi(self.current_x),self.poi(self.l2*math.cos(self.current_theta1+self.current_theta2))]])
+        # self.J = np.matrix([[self.poi(-self.current_y),self.poi(-self.l2*math.sin(self.current_theta1+self.current_theta2))],[self.poi(self.current_x),self.poi(self.l2*math.cos(self.current_theta1+self.current_theta2))]])
         # rospy.loginfo("J")
         # rospy.loginfo(self.J)
         if not self.work_flag:
@@ -84,7 +84,7 @@ class Scara():
                 else:
                     self.work_flag = False
                     cnt = 1
-                    self.pub_move_cmd.publish(data=[self.end_theta1,self.end_theta2])
+                    self.pub_move_cmd.publish(data= [self.target[0,0],self.target[1,0]])
                     rospy.loginfo("end")
             
             # self.target_theta = (180/math.pi)*(self.next_theta+self.current_theta)+np.array([[35],[138]])
