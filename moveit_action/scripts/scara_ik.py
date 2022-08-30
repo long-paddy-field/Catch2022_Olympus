@@ -43,17 +43,18 @@ class Scara():
         self.er = self.target - self.start
         self.distance=np.linalg.norm(self.er)
         self.t0 = math.sqrt(self.distance/self.a)
-        self.end_theta1 = math.atan(self.target[1,0]/self.target[0,0])+self.sign*math.acos((np.linalg.norm(self.target)**2+self.l1**2-self.l2**2)/(2*self.l1*np.linalg.norm(self.target)))
-        self.end_theta2 = -self.sign*(pi-math.acos((self.l1**2+self.l2**2-np.linalg.norm(self.target)**2)/(2*self.l1*self.l2)))
-        self.end_theta = np.array([[self.end_theta1],[self.end_theta2]])
+        # self.end_theta1 = math.atan(self.target[1,0]/self.target[0,0])+self.sign*math.acos((np.linalg.norm(self.target)**2+self.l1**2-self.l2**2)/(2*self.l1*np.linalg.norm(self.target)))
+        # self.end_theta2 = -self.sign*(pi-math.acos((self.l1**2+self.l2**2-np.linalg.norm(self.target)**2)/(2*self.l1*self.l2)))
+        # self.end_theta = np.array([[self.end_theta1],[self.end_theta2]])
+        self.end_pos = self.target
     
     def current_position_callback(self,msg):
-        self.current_theta1 = (msg.data[0]-35) * pi / 180
-        self.current_theta2 = (msg.data[1]-138) * pi / 180
-        self.current_theta = np.array([[self.current_theta1],[self.current_theta2]])
-        self.current_x = self.l1 * math.cos (self.current_theta1) + self.l2 * math.cos (self.current_theta1 + self.current_theta2)
-        self.current_y = self.l1 * math.sin (self.current_theta1) + self.l2 * math.sin (self.current_theta1 + self.current_theta2)
-        self.current = np.array([[self.current_x],[self.current_y]])
+        # self.current_theta1 = (msg.data[0]-35) * pi / 180
+        # self.current_theta2 = (msg.data[1]-138) * pi / 180
+        # self.current_theta = np.array([[self.current_theta1],[self.current_theta2]])
+        # self.current_x = self.l1 * math.cos (self.current_theta1) + self.l2 * math.cos (self.current_theta1 + self.current_theta2)
+        # self.current_y = self.l1 * math.sin (self.current_theta1) + self.l2 * math.sin (self.current_theta1 + self.current_theta2)
+        self.current = np.array([[msg.data[0]],[msg.data[1]]])
         # self.J = np.matrix([[self.poi(-self.current_y),self.poi(-self.l2*math.sin(self.current_theta1+self.current_theta2))],[self.poi(self.current_x),self.poi(self.l2*math.cos(self.current_theta1+self.current_theta2))]])
         # rospy.loginfo("J")
         # rospy.loginfo(self.J)
@@ -84,7 +85,7 @@ class Scara():
                 else:
                     self.work_flag = False
                     cnt = 1
-                    self.pub_move_cmd.publish(data= [self.target[0,0],self.target[1,0]])
+                    self.pub_move_cmd.publish(data= [self.end_pos[0,0],self.end_pos[1,0]])
                     rospy.loginfo("end")
             
             # self.target_theta = (180/math.pi)*(self.next_theta+self.current_theta)+np.array([[35],[138]])
