@@ -7,6 +7,7 @@ import rospy
 from typing import List
 from std_msgs.msg import Float32MultiArray
 from std_msgs.msg import Float32
+from std_msgs.msg import Int8MultiArray
 from std_msgs.msg import Int32MultiArray
 from sensor_msgs.msg import JointState
 from std_msgs.msg import Int8
@@ -46,33 +47,33 @@ class device():
     def emergency_callback(self, msg):
         self.emergency = msg.data
 
-    def field_color_callback(self, msg):
+    def is_blue_callback(self, msg):
         if msg.data == True:
-            self.sign = 1
-        else:
             self.sign = -1
+        else:
+            self.sign = 1
 
     def setup(self):
         global port
         self.uart = serial.Serial(port, 115200)
         self.pub0 = rospy.Publisher('current_angle', Float32MultiArray, queue_size=1)
-        self.pub1 = rospy.Publisher('is_grabbed', Bool, queue_size=1)
+        self.pub1 = rospy.Publisher('is_grabbed', Int8MultiArray, queue_size=1)
         self.rate = rospy.Rate(100)
         self.l1 = 0.6
         self.l2 = 0.3
         self.sign = 1
 
         # subscriberの宣言
-        self.sub_move_cmd = rospy.Subscriber('move_cmd', Float32MultiArray, self.move_cmd_callback, queue_size=1)
-        self.sub_servo_angle = rospy.Subscriber('servo_angle', Float32, self.servo_angle_callback, queue_size=1)
-        self.sub_stepper_state = rospy.Subscriber('stepper_state', Int8, self.stepper_state_callback, queue_size=1)
-        self.sub_pump_state = rospy.Subscriber('pump_state', Bool, self.pump_state_callback, queue_size=1)
-        self.sub_emergency = rospy.Subscriber('emergency', Int8, self.emergency_callback, queue_size=1)
-        self.sub_color_field = rospy.Subscriber('field_color', Bool, self.field_color_callback, queue_size=100)
-        self.msg = Float32MultiArray(data=[1, 2])
+        self.sub_move_cmd       = rospy.Subscriber('move_cmd', Float32MultiArray, self.move_cmd_callback, queue_size=1)
+        self.sub_servo_angle    = rospy.Subscriber('servo_angle', Float32, self.servo_angle_callback, queue_size=1)
+        self.sub_stepper_state  = rospy.Subscriber('stepper_state', Int8, self.stepper_state_callback, queue_size=1)
+        self.sub_pump_state     = rospy.Subscriber('pump_state', Bool, self.pump_state_callback, queue_size=1)
+        self.sub_emergency      = rospy.Subscriber('emergency', Int8, self.emergency_callback, queue_size=1)
+        self.sub_color_field    = rospy.Subscriber('is_blue', Bool, self.is_blue_callback, queue_size=100)
+        self.msg                = Float32MultiArray(data=[1, 2])
 
         # 変数の初期化
-        self.move_cmd = [125, 138]
+        self.move_cmd = [90,78]
         self.servo_angle = 0x00
         self.stepper_state = b'\x00'
         self.pump_state = b'\x00'
