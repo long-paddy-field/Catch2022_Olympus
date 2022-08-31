@@ -22,11 +22,12 @@ import serial.tools.list_ports
 
 port = serial.tools.list_ports.comports()[0].device
 
-
 class device():
+
     def __init__(self):
         self.setup()
         self.loop()
+        self.move_cmd_theta = self.cartesian_to_theta(self.move_cmd)
 
     def move_cmd_callback(self, msg):
         self.move_cmd = msg.data
@@ -135,7 +136,6 @@ class device():
         
         self.rviz_msg.header = Header()
         self.rviz_msg.name = ['stand_arm1','arm1_arm2','arm2_linear','linear_wrist']
-        self.move_cmd_theta = self.cartesian_to_theta(self.move_cmd)
         self.rviz_msg.position = (self.move_cmd_theta[0],self.move_cmd_theta[1])
         self.rviz_pub.publish(self.rviz_msg)
 
