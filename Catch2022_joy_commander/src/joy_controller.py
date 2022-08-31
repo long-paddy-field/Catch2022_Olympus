@@ -33,7 +33,7 @@ class JOY_CONTROLLER():
         self.pub_is_Handy       = rospy.Publisher("is_handy",Bool,queue_size = 1)      # 手動自動切り替え
         
         rospy.Subscriber("joy", Joy,self.joy_callback,queue_size = 100)
-        # rospy.Subscriber("current_position",Float32MultiArray,self.current_position_callback,queue_size=100)
+        rospy.Subscriber("current_position",Float32MultiArray,self.current_position_callback,queue_size=100)
         
         self.right_axes     = list()
         self.buttons        = list()
@@ -60,8 +60,8 @@ class JOY_CONTROLLER():
         self.right_axes     = [-1*msg.axes[2],msg.axes[3]]
         self.buttons        = msg.buttons
         
-    # def current_position_callback(self,msg):
-    #     self.current_position = msg.data
+    def current_position_callback(self,msg):
+        self.current_position = msg.data
         
     def update(self):
         rospy.loginfo("joy_controller : main routine")
