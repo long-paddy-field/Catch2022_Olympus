@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+from queue import Empty
 import rospy
 import numpy as np
 from sensor_msgs.msg import JointState
@@ -24,6 +25,7 @@ class Scara():
         self.start = np.array([[0],[0]])
         self.J=np.array([[1,0],[0,1]])
         self.pub_move_cmd = rospy.Publisher("move_cmd",Float32MultiArray,queue_size = 100)
+        self.pub_end_cmd = rospy.Publisher("end_cmd",Empty,queue_size= 100)
         rospy.Subscriber("current_position",Float32MultiArray,self.current_position_callback,queue_size = 100)
         rospy.Subscriber("target_location",Float32MultiArray,self.target_location_callback,queue_size = 100),
         rospy.Subscriber("is_blue",Bool,self.color_callback,queue_size=100)
@@ -85,6 +87,7 @@ class Scara():
                     self.work_flag = False
                     cnt = 1
                     self.pub_move_cmd.publish(data= [self.target[0,0],self.target[1,0]])
+                    self.pub_end_cmd.publish()
                     rospy.loginfo("end")
             
             # self.target_theta = (180/math.pi)*(self.next_theta+self.current_theta)+np.array([[35],[138]])
