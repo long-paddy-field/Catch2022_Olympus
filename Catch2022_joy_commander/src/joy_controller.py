@@ -55,8 +55,12 @@ class JOY_CONTROLLER():
         rospy.loginfo("joy_controller : end setting")
         
     def joy_callback(self,msg):
-        self.next_position  = [self.current_position[0] - 0.01*msg.axes[0] - 0.0005*msg.axes[4],
-                               self.current_position[1] + 0.01*msg.axes[1] + 0.0005*msg.axes[5]]
+        if not len(self.current_position) == 0:
+            self.next_position  = [self.current_position[0] - 0.01*msg.axes[0] - 0.0005*msg.axes[4],
+                                self.current_position[1] + 0.01*msg.axes[1] + 0.0005*msg.axes[5]]
+        else :
+            self.next_position  = [- 0.01*msg.axes[0] - 0.0005*msg.axes[4],
+                                 + 0.01*msg.axes[1] + 0.0005*msg.axes[5]]
         self.right_axes     = [-1*msg.axes[2],msg.axes[3]]
         self.buttons        = msg.buttons
         
