@@ -38,6 +38,18 @@ class device():
 
     def servo_angle_callback(self, msg):
         self.servo_angle = msg.data
+        self.current_theta1 = self.current_angle.data[0] - 35
+        self.current_theta2 = self.current_angle.data[1] - 138
+
+        if msg.data == True:
+            self.servo_angle = -(self.current_theta1 + self.current_theta2)
+        elif msg.data == False:
+            self.servo_angle = 90 - (self.current_theta1 + self.current_theta2)
+        
+        if self.servo_angle < 0:
+            self.servo_angle = self.servo_angle + 180
+        elif self.servo_angle > 360:
+            self.servo_angle = self.servo_angle - 180
 
     def stepper_state_callback(self, msg):
         self.stepper_state = msg.data.to_bytes(1, 'little')
@@ -67,7 +79,7 @@ class device():
 
         # subscriberの宣言
         self.sub_move_cmd       = rospy.Subscriber('move_cmd', Float32MultiArray, self.move_cmd_callback, queue_size=1)
-        self.sub_servo_angle    = rospy.Subscriber('servo_angle', Float32, self.servo_angle_callback, queue_size=1)
+        self.sub_servo_cmd    = rospy.Subscriber('servo_cmd', Bool, self.servo_angle_callback, queue_size=1)
         self.sub_stepper_state  = rospy.Subscriber('stepper_state', Int8, self.stepper_state_callback, queue_size=1)
         self.sub_pump_state     = rospy.Subscriber('pump_state', Bool, self.pump_state_callback, queue_size=1)
         self.sub_emergency      = rospy.Subscriber('emergency', Int8, self.emergency_callback, queue_size=1)
@@ -101,11 +113,11 @@ class device():
             print(self.uart.readline())
             return;
         rospy.loginfo(msg)
-        current_angle = Float32MultiArray(data=[msg[0], msg[1]])
-        self.current_position.data = self.theta_to_cartesian(current_angle.data)
+        self.current_angle = Float32MultiArray(data=[msg[0], msg[1]])
+        self.current_position.data = self.theta_to_cartesian(self.current_angle.data)
         self.theta_to_cartesian([0.5, 0.5])
         is_grabbed = Bool(data=msg[2])
-        self.pub0.publish(current_angle)
+        self.pub0.publish(self.current_angle)
         self.pub1.publish(is_grabbed)
         self.pub2.publish(self.current_position)
 
