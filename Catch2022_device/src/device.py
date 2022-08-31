@@ -27,10 +27,10 @@ class device():
     def __init__(self):
         self.setup()
         self.loop()
-        self.move_cmd_theta = self.cartesian_to_theta(self.move_cmd)
 
     def move_cmd_callback(self, msg):
         self.move_cmd = msg.data
+        self.move_cmd_theta = self.cartesian_to_theta(self.move_cmd)
         # rospy.loginfo(uart_msg)
         # motor=struct.pack('<ff',*move_cmd)
         # self.uart.write(motor)
