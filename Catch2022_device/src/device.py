@@ -59,6 +59,7 @@ class device():
         self.uart = serial.Serial(port, 115200)
         self.pub0 = rospy.Publisher('current_angle', Float32MultiArray, queue_size=1)
         self.pub1 = rospy.Publisher('is_grabbed', Int8MultiArray, queue_size=1)
+        self.pub2 = rospy.Publisher('current_position',Float32MultiArray,queue_size=1)
         self.rate = rospy.Rate(100)
         self.l1 = 0.6
         self.l2 = 0.3
@@ -79,6 +80,7 @@ class device():
         self.stepper_state = b'\x00'
         self.pump_state = b'\x00'
         self.emergency = b'\x00'
+        self.current_position = Float32MultiArray()
 
     def loop(self):
         while not rospy.is_shutdown():
@@ -87,7 +89,7 @@ class device():
             self.rate.sleep()
 
     def sendSerial(self):
-        uart_msg = struct.pack("<fffc??c", *self.move_cmd, self.servo_angle, self.stepper_state, self.pump_state, self.emergency, b'\xFF')
+        uart_msg = struct.pack("<fffc??c", *self.move_cmd_theta, self.servo_angle, self.stepper_state, self.pump_state, self.emergency, b'\xFF')
         # rospy.loginfo(uart_msg)
         self.uart.write(uart_msg)
 
@@ -100,10 +102,12 @@ class device():
             return;
         rospy.loginfo(msg)
         current_angle = Float32MultiArray(data=[msg[0], msg[1]])
+        self.current_position.data = self.theta_to_cartesian(current_angle.data)
         self.theta_to_cartesian([0.5, 0.5])
         is_grabbed = Bool(data=msg[2])
         self.pub0.publish(current_angle)
         self.pub1.publish(is_grabbed)
+        self.pub2.publish(self.current_position)
 
     def theta_to_cartesian(self, theta: List[float]):
         theta1 = math.pi * (theta[0] - 35) / 180
