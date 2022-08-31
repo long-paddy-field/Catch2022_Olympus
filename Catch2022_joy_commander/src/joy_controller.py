@@ -104,10 +104,10 @@ class JOY_CONTROLLER():
                         self.servo_cmd = not self.servo_cmd
                         self.pub_servo_cmd.publish(self.servo_cmd)
                 
-                if self.buttons[9]:                         #動作開始
+                if self.buttons[9]:                             #動作開始
                     self.pub_start_flag.publish()
                 
-                if self.buttons[11]:                        #自動手動切り替え
+                if self.buttons[11]:                            #自動手動切り替え
                     self.is_Handy = not self.is_Handy               
                     if self.is_Handy:
                         rospy.loginfo("change auto -> hand")
@@ -115,7 +115,7 @@ class JOY_CONTROLLER():
                         rospy.loginfo("change handy -> auto")
                 self.pub_is_Handy.publish(self.is_Handy)
                         
-            if not len(self.buttons) == 0 and self.buttons[8]:                         #緊急停止
+            if not len(self.buttons) == 0 and self.buttons[8]:   #緊急停止
                 self.pub_emergence_cmd.publish(self.emergence_cmd)
                 self.emergence = not self.emergence            
             
