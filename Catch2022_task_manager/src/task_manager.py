@@ -96,13 +96,14 @@ class Task3_GrabWork(smach.State):
         rospy.loginfo("task_manager : Task3_GrabWork is activated")
         smach.State.__init__(self, outcomes=['done'])
         rospy.Subscriber("is_grabbed",Int8MultiArray,self.is_grabbed_callback,queue_size=1)
-        rospy.Subscriber("move_cmd",JointTrajectory,)
-        self.task_counter = 0
-        self.arm_hight = 0
-        self.jaguar_hight = 90
-        self.is_completed = False
-        self.handstate = [0,0]
-        self.r = rospy.Rate(30)
+        self.pub_servo_cmd  = rospy.Publisher("servo_cmd",Bool,queue_size=100)
+        self.servo_cmd      = Bool(data = False)
+        self.task_counter   = 0
+        self.arm_hight      = 0
+        self.jaguar_hight   = 90
+        self.is_completed   = False
+        self.handstate      = [0,0]
+        self.r              = rospy.Rate(30)
         
     def is_grabbed_callback(self,msg):
         self.handstate = msg.data
@@ -111,21 +112,22 @@ class Task3_GrabWork(smach.State):
                 self.is_completed = True
             else :
                 self.is_completed = False
-        
         else:
             if (msg.data[0] == 1 or msg.data[1] == 1) and self.arm_hight > self.jaguar_hight:
                 self.is_completed = True
             else :
                 self.is_completed = False
-    
-    def move_cmd_callback(self,msg):
-        self.arm_hight = msg.points[2]
         
     def execute(self, ud):
         while not rospy.is_shutdown():
+            if self.task_counter == 1 or self.task_counter == 2:
+                self.servo_cmd = True
+            else : 
+                self.servo_cmd = False
+            
             if self.is_completed:
                 self.task_counter = self.task_counter + 1
-                if self.task_unter > 9:
+                if self.task_counter > 9:
                     self.task_counter = 0
                 return 'done'
             self.r.sleep()
@@ -190,67 +192,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-# class State1(smach.State):
-#     def __init__(self):
-#         smach.State.__init__(self, outcomes=['done', 'exit'])
-#         self.counter = 0
-
-#     def execute(self, userdata):
-#         rospy.loginfo('Executing state STATE1')
-#         rospy.sleep(2.0)
-#         if self.counter < 3:
-#             self.counter += 1
-#             return 'done'
-#         else:
-#             return 'exit'
-
-
-# class State2(smach.State):
-#     def __init__(self):
-#         smach.State.__init__(self, outcomes=['done'])
-
-#     def execute(self, userdata):
-#         rospy.loginfo('Executing state STATE2')
-#         rospy.sleep(2.0)
-#         return 'done'
-
-
-# class State3(smach.State):
-#     def __init__(self):
-#         smach.State.__init__(self, outcomes=['done'])
-
-#     def execute(self, userdata):
-#         rospy.loginfo('Executing state STATE2')
-#         rospy.sleep(2.0)
-#         return 'done'
-
-# # main
-
-
-# def main():
-#     rospy.init_node('smach_somple2')
-
-#     sm_top = smach.StateMachine(outcomes=['succeeded'])
-#     with sm_top:
-#         smach.StateMachine.add('STATE3', State3(), transitions={'done': 'SUB'})
-
-#         sm_sub = smach.StateMachine(outcomes=['done'])
-#         with sm_sub:
-#             smach.StateMachine.add('STATE1', State1(), transitions={
-#                                    'done': 'STATE2', 'exit': 'done'})
-#             smach.StateMachine.add(
-#                 'STATE2', State2(), transitions={'done': 'STATE1'})
-
-#         smach.StateMachine.add('SUB', sm_sub, transitions={
-#                                'done': 'succeeded'})
-
-#     sis = smach_ros.IntrospectionServer('smach_server', sm_top, '/SM_ROOT')
-#     sis.start()
-#     outcome = sm_top.execute()
-#     rospy.spin()
-#     sis.stop()
-
-
-# if __name__ == '__main__':
-#     main()
