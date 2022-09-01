@@ -59,16 +59,21 @@ class Task1_Init(smach.State): #諸々の初期化待機
 class Task2_SeekWork(smach.State): #じゃがりこ探しに行く
     def __init__(self):
         smach.State.__init__(self,outcomes=['done','completed'])
-        rospy.Subscriber("end_cmd",Empty,self.grab_cmd_callback,queue_size = 1)
+        rospy.Subscriber("end_cmd",Empty,self.end_cmd_callback,queue_size = 100)
+        rospy.Subscriber("grab_cmd",Empty,self.grab_cmd_callback,queue_size = 100)
         self.pub_servo_cmd  = rospy.Publisher("servo_cmd",Bool,queue_size=100)
-        self.target_pub = rospy.Publisher("target_location",Float32MultiArray,queue_size = 1)
-        self.stepper_state_pub = rospy.Publisher("stepper_state",Int8,queue_size=1)
-        self.stepper_state = Int8(data = 0)
-        self.end_flag = False
-        self.task_counter = 0
+        self.target_pub     = rospy.Publisher("target_location",Float32MultiArray,queue_size = 100)
+        self.stepper_state_pub = rospy.Publisher("stepper_state",Int8,queue_size=100)
+        self.stepper_state  = Int8(data = 0)
+        self.end_flag       = False
+        self.task_counter   = 0
         self.servo_cmd      = Bool(data = False)
         self.r = rospy.Rate(30)
         
+    def end_cmd_callback(self,msg):
+        rospy.loginfo("nya")
+        self.end_flag = True
+    
     def grab_cmd_callback(self,msg):
         self.end_flag = True
     

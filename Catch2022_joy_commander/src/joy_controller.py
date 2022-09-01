@@ -20,17 +20,17 @@ class JOY_CONTROLLER():
     def initializer(self):
         self.r = rospy.Rate(10)
         
-        self.pub_move_cmd       = rospy.Publisher("move_cmd",Float32MultiArray,queue_size = 1)
-        self.pub_right_axes     = rospy.Publisher("right_axes",Float32MultiArray,queue_size = 1)
-        self.pub_is_blue        = rospy.Publisher("is_blue",Bool,queue_size = 1)       # フィールドの色を設定
-        self.pub_pmp_state      = rospy.Publisher("pmp_state",Bool,queue_size = 1)     # 真で吸う
-        self.pub_grab_cmd       = rospy.Publisher("grab_cmd",Empty,queue_size = 1)     # 掴む
-        self.pub_release_cmd    = rospy.Publisher("release_cmd",Empty,queue_size = 1)  # 離す
-        self.pub_servo_cmd      = rospy.Publisher("servo_cmd",Bool,queue_size = 1)     # 0 でまっすぐ 1 で垂直
-        self.pub_step_cmd       = rospy.Publisher("step_cmd",Int8,queue_size = 1)      # ステッパ 1 が 上昇
-        self.pub_emergence_cmd  = rospy.Publisher("emergence_cmd",Int8,queue_size = 1) # 緊急停止
-        self.pub_start_flag     = rospy.Publisher("start_flag",Empty,queue_size = 1)   # スタート
-        self.pub_is_Handy       = rospy.Publisher("is_handy",Bool,queue_size = 1)      # 手動自動切り替え
+        self.pub_move_cmd       = rospy.Publisher("move_cmd",Float32MultiArray,queue_size = 100)
+        self.pub_right_axes     = rospy.Publisher("right_axes",Float32MultiArray,queue_size = 100)
+        self.pub_is_blue        = rospy.Publisher("is_blue",Bool,queue_size = 100)       # フィールドの色を設定
+        self.pub_pmp_state      = rospy.Publisher("pmp_state",Bool,queue_size = 100)     # 真で吸う
+        self.pub_grab_cmd       = rospy.Publisher("grab_cmd",Empty,queue_size = 100)     # 掴む
+        self.pub_release_cmd    = rospy.Publisher("release_cmd",Empty,queue_size = 100)  # 離す
+        self.pub_servo_cmd      = rospy.Publisher("servo_cmd",Bool,queue_size = 100)     # 0 でまっすぐ 1 で垂直
+        self.pub_step_cmd       = rospy.Publisher("step_cmd",Bool,queue_size = 100)      # ステッパ 1 が 上昇
+        self.pub_emergence_cmd  = rospy.Publisher("emergence_cmd",Int8,queue_size = 100) # 緊急停止
+        self.pub_start_flag     = rospy.Publisher("start_flag",Empty,queue_size = 100)   # スタート
+        self.pub_is_Handy       = rospy.Publisher("is_handy",Bool,queue_size = 100)      # 手動自動切り替え
         
         rospy.Subscriber("joy", Joy,self.joy_callback,queue_size = 100)
         rospy.Subscriber("current_position",Float32MultiArray,self.current_position_callback,queue_size=100)
@@ -85,7 +85,7 @@ class JOY_CONTROLLER():
                     if self.buttons[1] and not self.buttons[3]: #掴む
                         self.pub_grab_cmd.publish()
                         b_msg = Bool(data = True)
-                        self.pub_pmp_state(b_msg)
+                        self.pub_pmp_state.publish(b_msg)
                         
                     if self.buttons[2] and not self.buttons[0]: #赤サイドのとき押す
                         self.is_blue.data = False
@@ -94,14 +94,14 @@ class JOY_CONTROLLER():
                     if self.buttons[3] and not self.buttons[1]: #離す
                         self.pub_release_cmd.publish()
                         b_msg = Bool(data = False)
-                        self.pub_pmp_state(b_msg)
+                        self.pub_pmp_state.publish(b_msg)
                                                 
                     if self.buttons[6] and not self.buttons[7]: #ステップ上昇
                         self.step_cmd.data = 1
                         self.pub_step_cmd.publish(self.step_cmd)
                         
                     if self.buttons[7] and not self.buttons[6]: #ステップ下降
-                        self.step_cmd.data = -1
+                        self.step_cmd.data = 0
                         self.pub_step_cmd.publish(self.step_cmd)
                 
                     if self.buttons[10]:                        #サーボ駆動

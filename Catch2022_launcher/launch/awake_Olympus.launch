@@ -11,4 +11,11 @@
 
     <include file = "$(find Catch2022_jaguar_indicator)/launch/jaguar_indicator.launch"/>
 
+    <arg name="model" default="$(find Catch2022_sim)/urdf/SCARA_sample.urdf" />
+    <arg name="rvizconfig" default="$(find Catch2022_sim)/config/SCARA_arm.rviz" />
+
+    <param name="robot_description" textfile="$(find Catch2022_sim)/urdf/SCARA_sample.urdf" />
+    <node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rvizconfig) -f base_link" />
+    <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
+
 </launch>

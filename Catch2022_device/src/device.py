@@ -14,13 +14,14 @@ from std_msgs.msg import Int8
 from std_msgs.msg import Bool
 from std_msgs.msg import Empty
 from std_msgs.msg import Header
-from cobs import cobs
+# from cobs import cobs
 import serial
 import struct
 import math
 import serial.tools.list_ports
 
-port = serial.tools.list_ports.comports()[0].device
+# port = serial.tools.list_ports.comports()[0].device
+port="/dev/pts/4"
 
 class device():
 
@@ -72,6 +73,13 @@ class device():
         self.pub0 = rospy.Publisher('current_angle', Float32MultiArray, queue_size=1)
         self.pub1 = rospy.Publisher('is_grabbed', Int8MultiArray, queue_size=1)
         self.pub2 = rospy.Publisher('current_position',Float32MultiArray,queue_size=1)
+        self.rviz_pub = rospy.Publisher("joint_states",JointState,queue_size=100)
+        
+        self.rviz_msg = JointState() 
+        self.rviz_msg.header = Header()
+        self.rviz_msg.name = ['stand_arm1','arm1_arm2','arm2_linear','linear_wrist']
+
+
         self.rate = rospy.Rate(100)
         self.l1 = 0.6
         self.l2 = 0.3
@@ -87,7 +95,8 @@ class device():
         self.msg                = Float32MultiArray(data=[1, 2])
 
         # 変数の初期化
-        self.move_cmd = [90,78]
+        self.move_cmd = [0.3, 0.3]
+        self.move_cmd_theta = [90,78]
         self.servo_angle = 0x00
         self.stepper_state = b'\x00'
         self.pump_state = b'\x00'
@@ -96,8 +105,11 @@ class device():
 
     def loop(self):
         while not rospy.is_shutdown():
-            self.sendSerial()
-            self.receiveSerial()
+            # self.sendSerial()
+            # self.receiveSerial()
+
+            self.rviz_msg.header.stamp = rospy.Time.now()
+            self.rviz_simulator()
             self.rate.sleep()
 
     def sendSerial(self):
@@ -145,14 +157,12 @@ class device():
         else:
             return arg
 
-    def rviz_simulator(self,msg):
-        self.rviz_pub = rospy.Publisher("joint_states",JointState,queue_size=100)
-        self.rviz_msg = JointState() 
-        self.rviz_cmd = []
+    def rviz_simulator(self):  
+        self.rviz_msg.header.stamp = rospy.Time.now()    
+        self.rviz_msg.position = [0,0,0,0]
         
-        self.rviz_msg.header = Header()
-        self.rviz_msg.name = ['stand_arm1','arm1_arm2','arm2_linear','linear_wrist']
-        self.rviz_msg.position = (self.move_cmd_theta[0],self.move_cmd_theta[1])
+        # self.rviz_msg.position = [self.move_cmd_theta[0]*math.pi/180,self.move_cmd_theta[1]*math.pi/180,0,0]
+
         self.rviz_pub.publish(self.rviz_msg)
 
 
