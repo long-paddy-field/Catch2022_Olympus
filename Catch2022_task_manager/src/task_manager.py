@@ -59,7 +59,7 @@ class Task1_Init(smach.State): #諸々の初期化待機
 class Task2_SeekWork(smach.State): #じゃがりこ探しに行く
     def __init__(self):
         smach.State.__init__(self,outcomes=['done','completed'])
-        rospy.Subscriber("grab_cmd",Empty,self.grab_cmd_callback,queue_size = 1)
+        rospy.Subscriber("end_cmd",Empty,self.grab_cmd_callback,queue_size = 1)
         self.target_pub = rospy.Publisher("target_location",Float32MultiArray,queue_size = 1)
         self.stepper_state_pub = rospy.Publisher("stepper_state",Int8,queue_size=1)
         self.stepper_state = Int8(data = 0)
