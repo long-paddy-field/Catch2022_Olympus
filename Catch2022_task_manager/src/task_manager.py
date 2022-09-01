@@ -37,8 +37,8 @@ class Task1_Init(smach.State): #諸々の初期化待機
         if msg.data == True:
             jaguar_pos_x = [0,0,0,0,0,0,0,0]
             jaguar_pos_y = [0,0,0,0,0,0,0,0]
-            box_pos_x = [0,0,0,0]
-            box_pos_y = [0,0,0,0]
+            box_pos_x    = [0,0,0,0]
+            box_pos_y    = [0,0,0,0]
         elif msg.data == False:
             jaguar_pos_x = [0,0,0,0,0,0,0,0]
             jaguar_pos_y = [0,0,0,0,0,0,0,0]
@@ -60,11 +60,13 @@ class Task2_SeekWork(smach.State): #じゃがりこ探しに行く
     def __init__(self):
         smach.State.__init__(self,outcomes=['done','completed'])
         rospy.Subscriber("end_cmd",Empty,self.grab_cmd_callback,queue_size = 1)
+        self.pub_servo_cmd  = rospy.Publisher("servo_cmd",Bool,queue_size=100)
         self.target_pub = rospy.Publisher("target_location",Float32MultiArray,queue_size = 1)
         self.stepper_state_pub = rospy.Publisher("stepper_state",Int8,queue_size=1)
         self.stepper_state = Int8(data = 0)
         self.end_flag = False
         self.task_counter = 0
+        self.servo_cmd      = Bool(data = False)
         self.r = rospy.Rate(30)
         
     def grab_cmd_callback(self,msg):
@@ -82,13 +84,19 @@ class Task2_SeekWork(smach.State): #じゃがりこ探しに行く
                 self.target_msg.data = [jaguar_pos_x[self.task_counter],jaguar_pos_y[self.task_counter]]
                 self.target_pub.publish(self.target_msg)
 
-            if self.task_couter == 1 or self.task_counter == 2:
+            if self.task_counter == 1 or self.task_counter == 2:
                 self.stepper_state.data = 3
             else:
                 self.stepper_state.data = 1
             self.stepper_state_pub.publish(self.stepper_state)
                 
             while not rospy.is_shutdown():
+                if not is_Handy:
+                    if self.task_counter == 1 or self.task_counter == 2:
+                        self.servo_cmd = True
+                    else : 
+                        self.servo_cmd = False
+                    self.pub_servo_cmd.publish(self.servo_cmd)    
                 if self.end_flag:
                     rospy.loginfo("task_manager : Task2_SeekWork is ended")
                     self.task_counter = self.task_counter + 1
@@ -107,10 +115,8 @@ class Task3_GrabWork(smach.State):
         smach.State.__init__(self, outcomes=['done'])
         rospy.Subscriber("is_grabbed",Int8MultiArray,self.is_grabbed_callback,queue_size=1)
         rospy.Subscriber("step_cmd",Bool,self.step_cmd_callback,queue_size=1)
-        self.pub_servo_cmd  = rospy.Publisher("servo_cmd",Bool,queue_size=100)
         self.stepper_state_pub = rospy.Publisher("stepper_state",Int8,queue_size=1)
         self.stepper_state = Int8(data = 0)
-        self.servo_cmd      = Bool(data = False)
         self.task_counter   = 0
         self.arm_hight      = 0
         self.jaguar_hight   = 90
@@ -161,13 +167,7 @@ class Task3_GrabWork(smach.State):
                 self.is_completed = False
         
     def execute(self, ud):
-        while not rospy.is_shutdown():
-
-            if self.task_counter == 1 or self.task_counter == 2:
-                self.servo_cmd = True
-            else : 
-                self.servo_cmd = False
-            
+        while not rospy.is_shutdown():            
             if self.loop_counter == 0:
                 if self.task_counter == 1 or self.task_counter == 2:
                     self.stepper_state.data = 4
@@ -197,6 +197,7 @@ class Task4_SeekBox(smach.State):
         rospy.Subscriber("release_cmd",Empty,queue_size = 1)
         rospy.Subscriber("end_cmd",Empty,self.end_cmd_callback,queue_size=1)
         rospy.Subscriber("step_cmd",Bool,self.step_cmd_callback,queue_size=1)
+        self.pub_servo_cmd  = rospy.Publisher("servo_cmd",Bool,queue_size=100)
         self.stepper_state_pub = rospy.Publisher("stepper_state",Int8,queue_size=1)
         self.stepper_state = Int8(data = 0)
         self.target_pub = rospy.Publisher("target_location",Float32MultiArray,queue_size = 1)
@@ -204,6 +205,7 @@ class Task4_SeekBox(smach.State):
         self.is_released = False
         self.task_counter = 0      
         self.r = rospy.Rate(30)
+        self.servo_cmd = Bool(data = False)
         
     def release_cmd_callback(self,msg):
         self.is_released = True
@@ -257,6 +259,12 @@ class Task4_SeekBox(smach.State):
         self.target_pub.publish(self.target_msg)
         
         while not rospy.is_shutdown():
+            if not is_Handy:
+                if self.task_counter == 6 or self.task_counter == 7:
+                    self.servo_cmd = True
+                else:
+                    self.servo_cmd = False
+                self.pub_servo_cmd.publish(self.servo_cmd)
             if self.is_released:
                 rospy.loginfo("task_manager : Task4_SeekBox is ended")
                 self.is_released = False
