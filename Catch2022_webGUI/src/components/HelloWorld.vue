@@ -5,7 +5,7 @@
         <v-list density="compact" nav>
           <v-list-item prepend-icon="mdi-view-dashboard" title="Home" value="home"></v-list-item>
           <v-list-item prepend-icon="mdi-forum" title="About" value="about"></v-list-item>
-          <v-list-item prepend-icon="mdi-reload" title="Reload" value="reload" @click="()=>{
+          <v-list-item prepend-icon="mdi-reload" title="Reload" value="reload" @click="() => {
             $router.go(0)
           }"></v-list-item>
         </v-list>
@@ -22,11 +22,15 @@
           <!-- {{ servoAngle?.data }} -->
           <!-- <v-slider v-model="servoRef" label="track-color" v-on:update:model-value="() => { servoAngleTopic.publish({ data: servoRef }) }"></v-slider> -->
           Arm0 angle
-          <v-slider v-model="moveCmdRef0" label="track-color" max=250 v-on:update:model-value="() => {
-            moveCmdTopic.publish({ data: [moveCmdRef0, moveCmdRef1] })
-          }"></v-slider>
+          <v-slider v-model="moveCmdRef0" label="track-color" max=250 thumb-label v-on:update:model-value="() => { moveCmdTopic.publish({ data: [moveCmdRef0, moveCmdRef1] }) }"></v-slider>
           Arm1 angle
-          <v-slider v-model="moveCmdRef1" label="track-color" max=276 v-on:update:model-value="() => { moveCmdTopic.publish({ data: [moveCmdRef0, moveCmdRef1] }) }"></v-slider>
+          <v-slider v-model="moveCmdRef1" label="track-color" max=276 thumb-label v-on:update:model-value="() => { moveCmdTopic.publish({ data: [moveCmdRef0, moveCmdRef1] }) }"></v-slider>
+          Servo
+          <v-slider v-model="servoAngleRef" label="track-color" max=360 thumb-label v-on:update:model-value="() => { servoAngleTopic.publish({ data: servoAngleRef }) }"></v-slider>
+          Stepper
+          <v-slider v-model="stepperStateRef" :min="0" :max="5" :step="1" thumb-label v-on:update:model-value="() => { stepperStateTopic.publish({ data: stepperStateRef }) }"></v-slider>
+          Pmp
+          <v-switch v-model="pmpStateRef" v-on:update:model-value="() => { pmpStateTopic.publish({ data:pmpStateRef }) }"></v-switch>
         </div>
       </v-main>
     </v-app>
@@ -42,11 +46,11 @@ type floatType = {
   data: number
 }
 let drawer = ref<boolean>(false);
-const servoRef = ref<number>(0)
+const servoAngleRef = ref<number>(0)
 const moveCmdRef0 = ref<number>(0)
 const moveCmdRef1 = ref<number>(0)
 const stepperStateRef = ref<number>(0)
-const pmpStateRef = ref<number>(0)
+const pmpStateRef = ref<boolean>(false)
 const emergencyRef = ref<number>(0)
 const servoAngleTopic = createTopic<floatType>({
   name: '/servo_angle',

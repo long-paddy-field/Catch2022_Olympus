@@ -55,8 +55,8 @@ class device():
     def stepper_state_callback(self, msg):
         self.stepper_state = msg.data.to_bytes(1, 'little')
 
-    def pump_state_callback(self, msg):
-        self.pump_state = msg.data
+    def pmp_state_callback(self, msg):
+        self.pmp_state = msg.data
 
     def emergency_callback(self, msg):
         self.emergency = msg.data
@@ -89,7 +89,7 @@ class device():
         self.sub_move_cmd       = rospy.Subscriber('move_cmd', Float32MultiArray, self.move_cmd_callback, queue_size=1)
         self.sub_servo_cmd    = rospy.Subscriber('servo_cmd', Bool, self.servo_angle_callback, queue_size=1)
         self.sub_stepper_state  = rospy.Subscriber('stepper_state', Int8, self.stepper_state_callback, queue_size=1)
-        self.sub_pump_state     = rospy.Subscriber('pump_state', Bool, self.pump_state_callback, queue_size=1)
+        self.sub_pmp_state     = rospy.Subscriber('pmp_state', Bool, self.pmp_state_callback, queue_size=1)
         self.sub_emergency      = rospy.Subscriber('emergency', Int8, self.emergency_callback, queue_size=1)
         self.sub_color_field    = rospy.Subscriber('is_blue', Bool, self.is_blue_callback, queue_size=100)
         self.msg                = Float32MultiArray(data=[1, 2])
@@ -99,7 +99,7 @@ class device():
         self.move_cmd_theta = [90,78]
         self.servo_angle = 0x00
         self.stepper_state = b'\x00'
-        self.pump_state = b'\x00'
+        self.pmp_state = b'\x00'
         self.emergency = b'\x00'
         self.current_position = Float32MultiArray()
 
@@ -113,8 +113,8 @@ class device():
             self.rate.sleep()
 
     def sendSerial(self):
-        uart_msg = struct.pack("<fffc??c", *self.move_cmd_theta, self.servo_angle, self.stepper_state, self.pump_state, self.emergency, b'\xFF')
-        # rospy.loginfo(uart_msg)
+        uart_msg = struct.pack("<fffc??c", *self.move_cmd, self.servo_angle, self.stepper_state, self.pmp_state, self.emergency, b'\xFF')
+        rospy.loginfo(uart_msg)
         self.uart.write(uart_msg)
 
     def receiveSerial(self):
