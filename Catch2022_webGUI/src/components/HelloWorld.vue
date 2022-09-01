@@ -50,7 +50,7 @@ const servoAngleRef = ref<number>(0)
 const moveCmdRef0 = ref<number>(0)
 const moveCmdRef1 = ref<number>(0)
 const stepperStateRef = ref<number>(0)
-const pmpStateRef = ref<boolean>(0)
+const pmpStateRef = ref<boolean>(false)
 const emergencyRef = ref<number>(0)
 const servoAngleTopic = createTopic<floatType>({
   name: '/servo_angle',
