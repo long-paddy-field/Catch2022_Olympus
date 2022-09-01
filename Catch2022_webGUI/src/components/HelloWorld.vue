@@ -25,7 +25,7 @@
           <v-slider v-model="moveCmdRef0" label="track-color" max=250 thumb-label v-on:update:model-value="() => { moveCmdTopic.publish({ data: [moveCmdRef0, moveCmdRef1] }) }"></v-slider>
           Arm1 angle
           <v-slider v-model="moveCmdRef1" label="track-color" max=276 thumb-label v-on:update:model-value="() => { moveCmdTopic.publish({ data: [moveCmdRef0, moveCmdRef1] }) }"></v-slider>
-          Servp
+          Servo
           <v-slider v-model="servoAngleRef" label="track-color" max=360 thumb-label v-on:update:model-value="() => { servoAngleTopic.publish({ data: servoAngleRef }) }"></v-slider>
           Stepper
           <v-slider v-model="stepperStateRef" :min="0" :max="5" :step="1" thumb-label v-on:update:model-value="() => { stepperStateTopic.publish({ data: stepperStateRef }) }"></v-slider>
