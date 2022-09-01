@@ -120,11 +120,12 @@ class Task3_GrabWork(smach.State):
         self.loop_counter   = 0
 
     def step_cmd_callback(self,msg):
-        if msg.data == True:#上昇
-            if self.stepper_state == 3:
-                self.stepper_state = 0
-            else:
-                self.stepper_state = self.stepper_state - 1
+        if is_Handy == True:
+            if msg.data == True:#上昇
+                if self.stepper_state == 3:
+                    self.stepper_state = 0
+                else:
+                    self.stepper_state = self.stepper_state - 1
         #     if self.stepper_state == 2:
         #         self.stepper_state = 1
         #     elif self.stepper_state == 4:
@@ -132,19 +133,19 @@ class Task3_GrabWork(smach.State):
         #     elif self.stepper_state == 1 or self.stepper_state == 3:
         #         self.stepper_state.data = 0  
 
-        elif msg.data == False:#下降
-            if self.stepper_state == 0 and (self.task_counter == 1 or self.task_counter ==2):
+            elif msg.data == False:#下降
+                if self.stepper_state == 0 and (self.task_counter == 1 or self.task_counter ==2):
                 # if self.task_counter == 1 or self.task_counter == 2:
                     self.stepper_state = 3
                 # else:
                 #     self.stepper_state = 1
-            else:
-                self.stepper_state = self.stepper_state + 1
+                else:
+                    self.stepper_state = self.stepper_state + 1
             # elif self.stepper_state == 1:
             #     self.stepper_state = 2
             # elif self.stepper_state == 3:
             #     self.stepper_state = 4
-        self.stepper_state_pub.publish(self.stepper_state)
+            self.stepper_state_pub.publish(self.stepper_state)
 
     def is_grabbed_callback(self,msg):
         self.handstate = msg.data
@@ -211,12 +212,14 @@ class Task4_SeekBox(smach.State):
         self.stepper_state.data == 2
         self.stepper_state_pub.publish(self.stepper_state)
     
+    
     def step_cmd_callback(self,msg):
-        if msg.data == True:#上昇
-            if self.stepper_state == 3:
-                self.stepper_state = 0
-            else:
-                self.stepper_state = self.stepper_state - 1
+        if is_Handy == True:
+            if msg.data == True:#上昇
+                if self.stepper_state == 3:
+                    self.stepper_state = 0
+                else:
+                    self.stepper_state = self.stepper_state - 1
         #     if self.stepper_state == 2:
         #         self.stepper_state = 1
         #     elif self.stepper_state == 4:
@@ -224,19 +227,20 @@ class Task4_SeekBox(smach.State):
         #     elif self.stepper_state == 1 or self.stepper_state == 3:
         #         self.stepper_state.data = 0  
 
-        elif msg.data == False:#下降
-            if self.stepper_state == 0 and (self.task_counter == 1 or self.task_counter ==2):
+            elif msg.data == False:#下降
+                if self.stepper_state == 0 and (self.task_counter == 1 or self.task_counter ==2):
                 # if self.task_counter == 1 or self.task_counter == 2:
                     self.stepper_state = 3
                 # else:
                 #     self.stepper_state = 1
-            else:
-                self.stepper_state = self.stepper_state + 1
+                else:
+                    self.stepper_state = self.stepper_state + 1
             # elif self.stepper_state == 1:
             #     self.stepper_state = 2
             # elif self.stepper_state == 3:
             #     self.stepper_state = 4
-        self.stepper_state_pub.publish(self.stepper_state)
+            self.stepper_state_pub.publish(self.stepper_state)
+        
         
     def execute(self, ud):
         global jaguar_pos_x
