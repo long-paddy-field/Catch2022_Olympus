@@ -144,6 +144,7 @@ class Task3_GrabWork(smach.State):
             #     self.stepper_state = 2
             # elif self.stepper_state == 3:
             #     self.stepper_state = 4
+        self.stepper_state_pub.publish(self.stepper_state)
 
     def is_grabbed_callback(self,msg):
         self.handstate = msg.data
@@ -193,7 +194,8 @@ class Task4_SeekBox(smach.State):
         rospy.loginfo("task_manager : Task4_SeekBox is activated")
         smach.State.__init__(self,outcomes=['done'])
         rospy.Subscriber("release_cmd",Empty,queue_size = 1)
-        rospy.Subscriber("end_cmd",Empty,self.stepper_state_callback,queue_size=1)
+        rospy.Subscriber("end_cmd",Empty,self.end_cmd_callback,queue_size=1)
+        rospy.Subscriber("step_cmd",Bool,self.step_cmd_callback,queue_size=1)
         self.stepper_state_pub = rospy.Publisher("stepper_state",Int8,queue_size=1)
         self.stepper_state = Int8(data = 0)
         self.target_pub = rospy.Publisher("target_location",Float32MultiArray,queue_size = 1)
@@ -205,8 +207,35 @@ class Task4_SeekBox(smach.State):
     def release_cmd_callback(self,msg):
         self.is_released = True
     
-    def stepper_state_callback(self,msg):
+    def end_cmd_callback(self,msg):
         self.stepper_state.data == 2
+        self.stepper_state_pub.publish(self.stepper_state)
+    
+    def step_cmd_callback(self,msg):
+        if msg.data == True:#上昇
+            if self.stepper_state == 3:
+                self.stepper_state = 0
+            else:
+                self.stepper_state = self.stepper_state - 1
+        #     if self.stepper_state == 2:
+        #         self.stepper_state = 1
+        #     elif self.stepper_state == 4:
+        #         self.stepper_state.data = 3
+        #     elif self.stepper_state == 1 or self.stepper_state == 3:
+        #         self.stepper_state.data = 0  
+
+        elif msg.data == False:#下降
+            if self.stepper_state == 0 and (self.task_counter == 1 or self.task_counter ==2):
+                # if self.task_counter == 1 or self.task_counter == 2:
+                    self.stepper_state = 3
+                # else:
+                #     self.stepper_state = 1
+            else:
+                self.stepper_state = self.stepper_state + 1
+            # elif self.stepper_state == 1:
+            #     self.stepper_state = 2
+            # elif self.stepper_state == 3:
+            #     self.stepper_state = 4
         self.stepper_state_pub.publish(self.stepper_state)
         
     def execute(self, ud):
