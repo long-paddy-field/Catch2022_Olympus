@@ -63,9 +63,9 @@ class device():
 
     def is_blue_callback(self, msg):
         if msg.data == True:
-            self.sign = -1
-        else:
             self.sign = 1
+        else:
+            self.sign = -1
 
     def setup(self):
         global port
