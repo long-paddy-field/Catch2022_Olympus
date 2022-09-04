@@ -4,13 +4,22 @@ import rospy
 import cv2
 import numpy as np
 from cv2 import THRESH_BINARY
+from std_msgs.msg import Float32MultiArray
+import math
+
 
 class Jaguar_Indicator:
     def __init__(self,cam_ch,loop_rate):
         rospy.loginfo("jaguar_indicator : called constructor")
         rospy.init_node("jaguar_indicator")
+        self.pub_jaguar_position = rospy.Publisher("jaguar_position",Float32MultiArray,queue_size= 1)
+        rospy.Subscriber("current_position",Float32MultiArray,self.current_position_callback,queue_size=1)
+        rospy.Subscriber("current_angle",Float32MultiArray,self.current_position_callback,queue_size=1)
         self.r = rospy.Rate(loop_rate)
-        
+        self.l1 = 0.6
+        self.l2 = 0.3
+        self.current_position = Float32MultiArray()
+        self.current_angle = Float32MultiArray()
         self.cv_cap= cv2.VideoCapture(cam_ch)
         self.cv_cap.set(cv2.CAP_PROP_FOURCC,cv2.VideoWriter_fourcc('M','J','P','G'))
         self.cv_cap.set(cv2.CAP_PROP_FPS,60)
@@ -33,26 +42,64 @@ class Jaguar_Indicator:
         _,dst_bi = cv2.threshold(dst_grey,50,200,THRESH_BINARY)
         # cv2.imshow("edge",dst_bi)
 #        my_circles = cv2.HoughCircles(dst_bi,cv2.HOUGH_GRADIENT,1,80, param1=100,param2=30,minRadius=0.084/self.pic_to_m,maxRadius=0.092/self.pic_to_m)
-        my_circles = cv2.HoughCircles(dst_bi,cv2.HOUGH_GRADIENT,1,80, param1=100,param2=30,minRadius=75,maxRadius=200)
-
-        if not isinstance(my_circles,np.ndarray) :
+        self.my_circles = cv2.HoughCircles(dst_bi,cv2.HOUGH_GRADIENT,1,80, param1=100,param2=30,minRadius=75,maxRadius=200)
+                  
+        if not isinstance(self.my_circles,np.ndarray) :
             rospy.loginfo("Circle is not found")
             no_array = np.array([0,0,0])
             cv2.imshow("img",frame)
             # cv2.imshow("bin",dst_bi)
             return no_array
         
-        # cv2.circle(frame,(200,200),10,(255,0,0),2)
-        # for i in my_circles[0,:]:
-        #     # draw the outer circle
-        #     cv2.circle(frame,(i[0],i[1]),i[2],(0,255,0),2)
-        #     rospy.loginfo("nya")
-        #     # draw the center of the circle
-        #     cv2.circle(frame,(i[0],i[1]),2,(0,0,255),3)
+        # cv2.circle(frame,(200,200),10,(255,0,0),2) #検出された円を一個づつ参照できる
+        for i in self.my_circles[0,:]: #:で行を参照してる
+            # draw the outer circle
+            cv2.circle(frame,(i[0],i[1]),i[2],(0,255,0),2)
+            rospy.loginfo("nya")
+            # draw the center of the circle
+            cv2.circle(frame,(i[0],i[1]),2,(0,0,255),3)
 
         cv2.imshow("img", frame)
 
-        return my_circles
+        return self.my_circles
+    
+    def pixel_to_meter(self):
+        self.meter_list = 1 * self.my_circles
+        # for i in self.my_circles[0,:]:
+        #     self.pixel_x = i[0]
+        #     self.pixel_y = i[1]
+        #     self.pixel_radius = i[2]
+        # #実機で検証するところ
+        # self.meter_x = self.pixel_x
+        # self.meter_y = self.pixel_y
+        # self.meter_radius = self.pixel_radius 
+        # meter = list([self.meter_x,self.meter_y,self.meter_radius])
+        return self.meter_list
+    
+    
+
+    def current_position_callback(self):
+        self.cam_world_x = self.current_position.data[0]#ロボット座標からみたcamの座標
+        self.cam_world_y = self.current_position.data[1]
+
+        for i in self.meter_list[0,:]:
+            self.edge_jaguar_x =i[0]#camの左上を原点としたjaguarの座標
+            self.edge_jaguar_y =i[1]
+        
+        self.edge_cam_x =  #camの左上を原点としたcamの中心の座標
+        self.edge_cam_y = 
+
+        self.cam_jaguar_x = self.edge_jaguar_x - self.edge_cam_x 
+        self.cam_jaguar_y = self.edge_jaguar_y - self.edge_cam_y
+        #ジャガのロボット座標への座標変換
+        self.jaguar_x = self.cam_world_x + (self.cam_jaguar_x*(math.sin(self.current_angle.data[0]+self.current_angle[1]))+ self.cam_jaguar_y*(math.cos(self.current_angle.data[0]+self.current_angle[1])))
+        self.jaguar_y = self.cam_world_y + (self.cam_jaguar_x*(math.cos(self.current_angle.data[0]+self.current_angle[1]))+self.cam_jaguar_y*(math.sin(self.current_angle.data[0]+self.current_angle[1])))
+        self.jaguar_position = np.array([self.jaguar_x,self.jaguar_y])
+        # for i in self.meter_list[0,:]:
+        #     self.jaguar_position_x = (i[0]*(math.sin(self.current_angle.data[0]+self.current_angle[1]))+i[1]*(math.cos(self.current_angle.data[0]+self.current_angle[1])))+self.current_position.data[0]
+        #     self.jaguar_position_y = (i[0]*(math.cos(self.current_angle.data[0]+self.current_angle[1]))+i[1]*(math.sin(self.current_angle.data[0]+self.current_angle[1])))+self.current_position.data[1]
+        #     self.jaguar_position = np.array([self.jaguar_position_x,self.jaguar_position_y])
+        self.pub_jaguar_position.publish(self.jaguar_position)
 
     def update(self):
         got_circle = list()
