@@ -54,8 +54,8 @@ class device():
     def setup(self):
         global port
         self.uart = serial.Serial(port, 115200)
-        self.pub0 = rospy.Publisher('current_angle', Float32MultiArray, queue_size=1)
-        self.pub1 = rospy.Publisher('is_grabbed', Bool, queue_size=1)
+        self.pub_current_angle = rospy.Publisher('current_angle', Float32MultiArray, queue_size=1)
+        self.pub_is_grabbed = rospy.Publisher('is_grabbed', Int8, queue_size=1)
         self.rate = rospy.Rate(100)
         self.l1 = 0.6
         self.l2 = 0.3
@@ -91,16 +91,16 @@ class device():
     def receiveSerial(self):
         # 受信と整形
         receiveData = self.uart.read(11)
-        msg = struct.unpack("<ff?cc",receiveData)
+        msg = struct.unpack("<ffccc",receiveData)
         if(not(msg[3]==b'\x00' and msg[4]==b'\xff')):
             print(self.uart.readline())
             return;
         # rospy.loginfo(msg)
         current_angle = Float32MultiArray(data=[msg[0], msg[1]])
         self.theta_to_cartesian([0.5, 0.5])
-        is_grabbed = Bool(data=msg[2])
-        self.pub0.publish(current_angle)
-        self.pub1.publish(is_grabbed)
+        is_grabbed = Int8(data=msg[2])
+        self.pub_current_angle.publish(current_angle)
+        self.pub_is_grabbed.publish(is_grabbed)
 
     def theta_to_cartesian(self, theta: List[float]):
         theta1 = math.pi * (theta[0] - 35) / 180
