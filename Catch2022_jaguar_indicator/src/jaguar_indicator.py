@@ -64,7 +64,8 @@ class Jaguar_Indicator:
         return self.my_circles
     
     def pixel_to_meter(self):
-        self.meter_list = 1 * self.my_circles
+        self.meter_circles = 1 * self.my_circles
+        
         # for i in self.my_circles[0,:]:
         #     self.pixel_x = i[0]
         #     self.pixel_y = i[1]
@@ -74,7 +75,7 @@ class Jaguar_Indicator:
         # self.meter_y = self.pixel_y
         # self.meter_radius = self.pixel_radius 
         # meter = list([self.meter_x,self.meter_y,self.meter_radius])
-        return self.meter_list
+        return self.meter_circles
     
     
 
@@ -82,24 +83,27 @@ class Jaguar_Indicator:
         self.cam_world_x = self.current_position.data[0]#ロボット座標からみたcamの座標
         self.cam_world_y = self.current_position.data[1]
 
-        for i in self.meter_list[0,:]:
+        for i in self.meter_circles[0,:]:
             self.edge_jaguar_x =i[0]#camの左上を原点としたjaguarの座標
             self.edge_jaguar_y =i[1]
         
-        self.edge_cam_x =  #camの左上を原点としたcamの中心の座標
-        self.edge_cam_y = 
+            #camの左上を原点としたcamの中心の座標
+            self.edge_cam_x = 1*960 #pixel単位からm単位に
+            self.edge_cam_y = 1*540
 
-        self.cam_jaguar_x = self.edge_jaguar_x - self.edge_cam_x 
-        self.cam_jaguar_y = self.edge_jaguar_y - self.edge_cam_y
-        #ジャガのロボット座標への座標変換
-        self.jaguar_x = self.cam_world_x + (self.cam_jaguar_x*(math.sin(self.current_angle.data[0]+self.current_angle[1]))+ self.cam_jaguar_y*(math.cos(self.current_angle.data[0]+self.current_angle[1])))
-        self.jaguar_y = self.cam_world_y + (self.cam_jaguar_x*(math.cos(self.current_angle.data[0]+self.current_angle[1]))+self.cam_jaguar_y*(math.sin(self.current_angle.data[0]+self.current_angle[1])))
-        self.jaguar_position = np.array([self.jaguar_x,self.jaguar_y])
+
+
+            self.cam_jaguar_x = self.edge_jaguar_x - self.edge_cam_x 
+            self.cam_jaguar_y = -(self.edge_jaguar_y - self.edge_cam_y)
+            #ジャガのロボット座標への座標変換
+            self.jaguar_x = self.cam_world_x+(self.cam_jaguar_x*(math.sin(self.current_angle.data[0]+self.current_angle[1]))+self.cam_jaguar_y*(math.cos(self.current_angle.data[0]+self.current_angle[1])))
+            self.jaguar_y = self.cam_world_y+(-self.cam_jaguar_y*(math.sin(self.current_angle.data[0]+self.current_angle[1]))-self.cam_jaguar_x*(math.cos(self.current_angle.data[0]+self.current_angle[1])))
+            self.jaguar_position = np.array([self.jaguar_x,self.jaguar_y])
         # for i in self.meter_list[0,:]:
         #     self.jaguar_position_x = (i[0]*(math.sin(self.current_angle.data[0]+self.current_angle[1]))+i[1]*(math.cos(self.current_angle.data[0]+self.current_angle[1])))+self.current_position.data[0]
         #     self.jaguar_position_y = (i[0]*(math.cos(self.current_angle.data[0]+self.current_angle[1]))+i[1]*(math.sin(self.current_angle.data[0]+self.current_angle[1])))+self.current_position.data[1]
         #     self.jaguar_position = np.array([self.jaguar_position_x,self.jaguar_position_y])
-        self.pub_jaguar_position.publish(self.jaguar_position)
+            self.pub_jaguar_position.publish(self.jaguar_position)
 
     def update(self):
         got_circle = list()
