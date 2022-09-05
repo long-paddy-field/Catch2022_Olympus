@@ -22,6 +22,7 @@ import serial.tools.list_ports
 
 # port = serial.tools.list_ports.comports()[0].device
 port="/dev/pts/4"
+mode = "real"
 
 class device():
 
@@ -69,6 +70,7 @@ class device():
 
     def setup(self):
         global port
+        global mode
         self.uart = serial.Serial(port, 115200)
         self.pub0 = rospy.Publisher('current_angle', Float32MultiArray, queue_size=1)
         self.pub1 = rospy.Publisher('is_grabbed', Int8MultiArray, queue_size=1)
@@ -107,7 +109,9 @@ class device():
         while not rospy.is_shutdown():
             # self.sendSerial()
             # self.receiveSerial()
-
+            # # if mode == "sim":
+            #     self.current_angle = self.move_cmd_theta
+            #     rospy.loginfo(self.current_angle)
             self.rviz_msg.header.stamp = rospy.Time.now()
             self.rviz_simulator()
             self.rate.sleep()
@@ -157,19 +161,12 @@ class device():
         else:
             return arg
 
-    def rviz_simulator(self):  
-        self.rviz_msg.header.stamp = rospy.Time.now()    
-        self.rviz_msg.position = [0,0,0,0]
-        
-        # self.rviz_msg.position = [self.move_cmd_theta[0]*math.pi/180,self.move_cmd_theta[1]*math.pi/180,0,0]
-
-        self.rviz_pub.publish(self.rviz_msg)
-
-
 if __name__ == "__main__":
+    
     # try:
     rospy.init_node('device')
     rospy.loginfo("device : node is activated")
+    # mode = rospy.get_param("mode")
     device = device()
     # except:
     #     rospy.loginfo("device : something wrong")

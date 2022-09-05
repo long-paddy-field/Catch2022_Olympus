@@ -56,6 +56,7 @@ class JOY_CONTROLLER():
         
     def joy_callback(self,msg):
         if not len(self.current_position) == 0:
+            rospy.loginfo("hahahahaha")
             self.next_position  = [self.current_position[0] - 0.01*msg.axes[0] - 0.0005*msg.axes[4],
                                 self.current_position[1] + 0.01*msg.axes[1] + 0.0005*msg.axes[5]]
         else :
