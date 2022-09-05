@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from queue import Empty
+from std_msgs.msg import Empty
 import rospy
 import numpy as np
 from sensor_msgs.msg import JointState
@@ -22,6 +22,7 @@ class Scara():
         self.target = np.array([[0],[0]])
         self.current = np.array([[0],[0.52]])
         self.current_theta = np.array([[pi/3],[pi/1.5]])
+        self.next_r = np.array([[0],[0]])
         self.start = np.array([[0],[0]])
         self.J=np.array([[1,0],[0,1]])
         self.pub_move_cmd = rospy.Publisher("move_cmd",Float32MultiArray,queue_size = 100)
@@ -45,9 +46,9 @@ class Scara():
         self.er = self.target - self.start
         self.distance=np.linalg.norm(self.er)
         self.t0 = math.sqrt(self.distance/self.a)
-        self.end_theta1 = math.atan(self.target[1,0]/self.target[0,0])+self.sign*math.acos((np.linalg.norm(self.target)**2+self.l1**2-self.l2**2)/(2*self.l1*np.linalg.norm(self.target)))
-        self.end_theta2 = -self.sign*(pi-math.acos((self.l1**2+self.l2**2-np.linalg.norm(self.target)**2)/(2*self.l1*self.l2)))
-        self.end_theta = np.array([[self.end_theta1],[self.end_theta2]])
+        # self.end_theta1 = math.atan(self.target[1,0]/self.target[0,0])+self.sign*math.acos((np.linalg.norm(self.target)**2+self.l1**2-self.l2**2)/(2*self.l1*np.linalg.norm(self.target)))
+        # self.end_theta2 = -self.sign*(pi-math.acos((self.l1**2+self.l2**2-np.linalg.norm(self.target)**2)/(2*self.l1*self.l2)))
+        # self.end_theta = np.array([[self.end_theta1],[self.end_theta2]])
     
     def current_position_callback(self,msg):
         self.current_theta1 = (msg.data[0]-35) * pi / 180
@@ -71,17 +72,17 @@ class Scara():
     def update(self):
         cnt = 1
         while not rospy.is_shutdown():
-            self.next_theta = np.array([[0],[0]])
+            # self.next_theta = np.array([[0],[0]])
             if self.work_flag == True:
                 if cnt <= self.h * self.t0:
                     next_dist = self.a*(2*cnt-1)/(2*(self.h**2))
                     self.next_r = (next_dist/self.distance)*self.er
-                    self.next_theta = np.dot(np.linalg.inv(self.J),next_r) 
+                    # self.next_theta = np.dot(np.linalg.inv(self.J),next_r) 
                     cnt = cnt + 1
                 elif cnt <= self.h * self.t0*2:
                     next_dist = (self.a/(2*self.h))*(4*self.t0-((2*cnt-1)/self.h))
                     next_r = (next_dist/self.distance)*self.er    
-                    self.next_theta = np.dot(np.linalg.inv(self.J),next_r)
+                    # self.next_theta = np.dot(np.linalg.inv(self.J),next_r)
                     cnt = cnt + 1
                 else:
                     self.work_flag = False

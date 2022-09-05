@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 from email.header import Header
-import queue
 from std_msgs.msg import Int8MultiArray
 from std_msgs.msg import Empty
 from std_msgs.msg import Bool
@@ -12,22 +11,54 @@ from std_msgs.msg import Float32MultiArray
 import rospy
 import smach
 import smach_ros
+import math
 
-jaguar_pos_x = [0,0,0,0,0,0,0,0]
-jaguar_pos_y = [0,0,0,0,0,0,0,0]
-box_pos_x = [0,0,0,0]
-box_pos_y = [0,0,0,0]
-is_Handy = False
+jaguar_pos_x = [0,0,0,0,0,0,0,0,0,0]
+jaguar_pos_y = [0,0,0,0,0,0,0,0,0,0]
+box_pos_x    = [0,0,0,0,0,0,0,0,0,0]
+box_pos_y    = [0,0,0,0,0,0,0,0,0,0]
+is_Handy     = False
+task_num     = Int8(data = 1)
 
+def is_handy_callback(msg):
+    global is_Handy
+    
+    is_Handy = msg.data
+
+def cal_dist(x0:float,y0:float,x1:float,y1:float):
+    return math.sqrt((x1-x0)**2+(y1-y0)**2)
+
+def jaguar_position_callback(msg):
+    global jaguar_pos_x
+    global jaguar_pos_y
+    
+    tag = 0
+    min_dist = 100
+    
+    if not len(msg.data) == 0 or (msg.data[0] == 0 and msg.data[1] == 0):
+        for i in range(10):
+            dist = cal_dist(msg.data[0],msg.data[1],jaguar_pos_x[i],jaguar_pos_y[i])
+            if dist < min_dist:
+                min_dist = dist
+                tag = i
+        
+        jaguar_pos_x[tag] = msg.data[0]
+        jaguar_pos_y[tag] = msg.data[1]        
+
+def pub_current_state():
+    global task_num
+    pub_state = rospy.Publisher("current_state",Int8,queue_size=100)
+    pub_state.publish(task_num)
+    
 
 class Task1_Init(smach.State): #諸々の初期化待機
     def __init__(self):
         rospy.loginfo("task_manager : Task1_Init is activated")
         self.is_started = False
         smach.State.__init__(self,outcomes=['done'])
-        rospy.Subscriber("start_flag",Empty,self.start_flag_callback,queue_size = 1)
-        rospy.Subscriber("is_blue",Bool,self.is_blue_callback,queue_size=1)
-        self.r = rospy.Rate(30)
+        rospy.Subscriber("start_flag",Empty,self.start_flag_callback,queue_size = 100)
+        rospy.Subscriber("is_blue",Bool,self.is_blue_callback,queue_size = 100)
+        self.r = rospy.Rate(100)
     
     def is_blue_callback(self,msg):
         global jaguar_pos_x
@@ -35,21 +66,25 @@ class Task1_Init(smach.State): #諸々の初期化待機
         global box_pos_x
         global box_pos_y
         if msg.data == True:
-            jaguar_pos_x = [0,0,0,0,0,0,0,0]
-            jaguar_pos_y = [0,0,0,0,0,0,0,0]
-            box_pos_x    = [0,0,0,0]
-            box_pos_y    = [0,0,0,0]
+            rospy.loginfo("task_manager : blue side")
+            jaguar_pos_x = [0,0,0,0,0,0,0,0,0,0]
+            jaguar_pos_y = [0,0,0,0,0,0,0,0,0,0]
+            box_pos_x    = [0,0,0,0,0,0,0,0,0,0]
+            box_pos_y    = [0,0,0,0,0,0,0,0,0,0]
         elif msg.data == False:
-            jaguar_pos_x = [0,0,0,0,0,0,0,0]
-            jaguar_pos_y = [0,0,0,0,0,0,0,0]
-            box_pos_x = [0,0,0,0]
-            box_pos_y = [0,0,0,0]
+            rospy.loginfo("task_manager : red side")
+            jaguar_pos_x = [0,0,0,0,0,0,0,0,0,0]
+            jaguar_pos_y = [0,0,0,0,0,0,0,0,0,0]
+            box_pos_x    = [0,0,0,0,0,0,0,0,0,0]
+            box_pos_y    = [0,0,0,0,0,0,0,0,0,0]
 
-        
     def start_flag_callback(self,msg):
         self.is_started = not self.is_started
         
     def execute(self, ud):
+        global task_num
+        task_num = 1
+        pub_current_state()
         while not rospy.is_shutdown():
             if self.is_started:
                 rospy.loginfo("task_manager : Task1_Init is ended")
@@ -276,15 +311,12 @@ class Task4_SeekBox(smach.State):
                 self.task_counter = self.task_counter + 1
                 return 'done'
             self.r.sleep()
-        
-def is_handy_callback(msg):
-    global is_Handy
-    is_Handy = msg.data
-            
+                    
 def main():
     rospy.init_node("task_manager")
      
     rospy.Subscriber('is_handy',Bool,is_handy_callback,queue_size = 100)
+    rospy.Subscriber('jaguar_position',Float32MultiArray,jaguar_position_callback,queue_size = 100)
     
     sm_top = smach.StateMachine(outcomes=['succeeded'])
     with sm_top:

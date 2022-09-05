@@ -22,6 +22,7 @@ import serial.tools.list_ports
 
 # port = serial.tools.list_ports.comports()[0].device
 port="/dev/pts/4"
+mode = "real"
 
 class device():
 
@@ -69,16 +70,17 @@ class device():
 
     def setup(self):
         global port
+        global mode
         self.uart = serial.Serial(port, 115200)
-        self.pub0 = rospy.Publisher('current_angle', Float32MultiArray, queue_size=1)
-        self.pub1 = rospy.Publisher('is_grabbed', Int8MultiArray, queue_size=1)
+
+        self.pub_current_angle = rospy.Publisher('current_angle', Float32MultiArray, queue_size=1)
+        self.pub_is_grabbed = rospy.Publisher('is_grabbed', Int8, queue_size=1)
         self.pub2 = rospy.Publisher('current_position',Float32MultiArray,queue_size=1)
         self.rviz_pub = rospy.Publisher("joint_states",JointState,queue_size=100)
         
         self.rviz_msg = JointState() 
         self.rviz_msg.header = Header()
         self.rviz_msg.name = ['stand_arm1','arm1_arm2','arm2_linear','linear_wrist']
-
 
         self.rate = rospy.Rate(100)
         self.l1 = 0.6
@@ -107,7 +109,9 @@ class device():
         while not rospy.is_shutdown():
             # self.sendSerial()
             # self.receiveSerial()
-
+            # # if mode == "sim":
+            #     self.current_angle = self.move_cmd_theta
+            #     rospy.loginfo(self.current_angle)
             self.rviz_msg.header.stamp = rospy.Time.now()
             self.rviz_simulator()
             self.rate.sleep()
@@ -120,7 +124,7 @@ class device():
     def receiveSerial(self):
         # 受信と整形
         receiveData = self.uart.read(11)
-        msg = struct.unpack("<ff?cc",receiveData)
+        msg = struct.unpack("<ffccc",receiveData)
         if(not(msg[3]==b'\x00' and msg[4]==b'\xff')):
             print(self.uart.readline())
             return;
@@ -128,9 +132,10 @@ class device():
         self.current_angle = Float32MultiArray(data=[msg[0], msg[1]])
         self.current_position.data = self.theta_to_cartesian(self.current_angle.data)
         self.theta_to_cartesian([0.5, 0.5])
-        is_grabbed = Bool(data=msg[2])
-        self.pub0.publish(self.current_angle)
-        self.pub1.publish(is_grabbed)
+        is_grabbed = Int8(data=msg[2])
+        self.pub_current_angle.publish(current_angle)
+        self.pub_is_grabbed.publish(is_grabbed)
+
         self.pub2.publish(self.current_position)
 
     def theta_to_cartesian(self, theta: List[float]):
@@ -157,19 +162,12 @@ class device():
         else:
             return arg
 
-    def rviz_simulator(self):  
-        self.rviz_msg.header.stamp = rospy.Time.now()    
-        self.rviz_msg.position = [0,0,0,0]
-        
-        # self.rviz_msg.position = [self.move_cmd_theta[0]*math.pi/180,self.move_cmd_theta[1]*math.pi/180,0,0]
-
-        self.rviz_pub.publish(self.rviz_msg)
-
-
 if __name__ == "__main__":
+    
     # try:
     rospy.init_node('device')
     rospy.loginfo("device : node is activated")
+    # mode = rospy.get_param("mode")
     device = device()
     # except:
     #     rospy.loginfo("device : something wrong")
