@@ -15,7 +15,7 @@
     <!-- <node name = "scara_ik" pkg = "moveit_action" type = "scara_ik.py" output = "screen"/> -->
 
     <!-- <include file="$(find catch2022_jaguar_indicator)/launch/jaguar_indicator.launch" />
-    <include file = "$(find catch2022_webGUI)/launch/webGUI.launch"/> -->
+    <include file = "$(find catch2022_webgui)/launch/webgui.launch"/> -->
 
     <group if= "$(eval mode == 'real')">
         <node name="device" pkg="catch2022_device" type="device.py" output="screen" />
