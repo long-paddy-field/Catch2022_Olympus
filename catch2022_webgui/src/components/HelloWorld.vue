@@ -22,9 +22,9 @@
           <!-- {{ servoAngle?.data }} -->
           <!-- <v-slider v-model="servoRef" label="track-color" v-on:update:model-value="() => { servoAngleTopic.publish({ data: servoRef }) }"></v-slider> -->
           Arm0 angle
-          <v-slider v-model="moveCmdRef0" label="track-color" max=250 thumb-label v-on:update:model-value="() => { moveCmdTopic.publish({ data: [moveCmdRef0, moveCmdRef1] }) }"></v-slider>
+          <v-slider v-model="moveRadRef0" label="track-color" max=250 thumb-label v-on:update:model-value="() => { moveRadTopic.publish({ data: [moveRadRef0*Math.PI/180, moveRadRef1*Math.PI/180] }) }"></v-slider>
           Arm1 angle
-          <v-slider v-model="moveCmdRef1" label="track-color" max=276 thumb-label v-on:update:model-value="() => { moveCmdTopic.publish({ data: [moveCmdRef0, moveCmdRef1] }) }"></v-slider>
+          <v-slider v-model="moveRadRef1" label="track-color" max=276 thumb-label v-on:update:model-value="() => { moveRadTopic.publish({ data: [moveRadRef0*Math.PI/180, moveRadRef1*Math.PI/180] }) }"></v-slider>
           Servo
           <v-slider v-model="servoAngleRef" label="track-color" max=360 thumb-label v-on:update:model-value="() => { servoAngleTopic.publish({ data: servoAngleRef }) }"></v-slider>
           Stepper
@@ -47,8 +47,8 @@ type floatType = {
 }
 let drawer = ref<boolean>(false);
 const servoAngleRef = ref<number>(0)
-const moveCmdRef0 = ref<number>(0)
-const moveCmdRef1 = ref<number>(0)
+const moveRadRef0 = ref<number>(0)
+const moveRadRef1 = ref<number>(0)
 const stepperStateRef = ref<number>(0)
 const pmpStateRef = ref<boolean>(false)
 const emergencyRef = ref<number>(0)
@@ -57,11 +57,11 @@ const servoAngleTopic = createTopic<floatType>({
   messageType: 'std_msgs/Float32',
 });
 const servoAngle = useSubscriber(servoAngleTopic);
-const moveCmdTopic = createTopic<{ data: number[] }>({
-  name: '/move_cmd',
+const moveRadTopic = createTopic<{ data: number[] }>({
+  name: '/move_rad',
   messageType: 'std_msgs/Float32MultiArray',
 });
-const moveCmd = useSubscriber(moveCmdTopic);
+const moveRad = useSubscriber(moveRadTopic);
 const stepperStateTopic = createTopic<floatType>({
   name: '/stepper_state',
   messageType: 'std_msgs/Int8',
