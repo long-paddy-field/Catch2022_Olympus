@@ -20,8 +20,8 @@ import struct
 import math
 import serial.tools.list_ports
 
-# port = serial.tools.list_ports.comports()[0].device
-port="/dev/pts/4"
+port = serial.tools.list_ports.comports()[0].device
+# port="/dev/pts/4"
 mode = "real"
 
 class device():
@@ -107,13 +107,13 @@ class device():
 
     def loop(self):
         while not rospy.is_shutdown():
-            # self.sendSerial()
-            # self.receiveSerial()
+            self.sendSerial()
+            self.receiveSerial()
             # # if mode == "sim":
             #     self.current_angle = self.move_cmd_theta
             #     rospy.loginfo(self.current_angle)
-            self.rviz_msg.header.stamp = rospy.Time.now()
-            self.rviz_simulator()
+            # self.rviz_msg.header.stamp = rospy.Time.now()
+            # self.rviz_simulator()
             self.rate.sleep()
 
     def sendSerial(self):
@@ -128,12 +128,12 @@ class device():
         if(not(msg[3]==b'\x00' and msg[4]==b'\xff')):
             print(self.uart.readline())
             return;
-        rospy.loginfo(msg)
+        # rospy.loginfo(msg)
         self.current_angle = Float32MultiArray(data=[msg[0], msg[1]])
         self.current_position.data = self.theta_to_cartesian(self.current_angle.data)
         self.theta_to_cartesian([0.5, 0.5])
         is_grabbed = Int8(data=msg[2])
-        self.pub_current_angle.publish(current_angle)
+        self.pub_current_angle.publish(self.current_angle)
         self.pub_is_grabbed.publish(is_grabbed)
 
         self.pub2.publish(self.current_position)
