@@ -1,18 +1,18 @@
 <?xml version="1.0"?>
 
 <launch>
-    <arg name = "model" default="$(find Catch2022_sim)/urdf/SCARA_sample.urdf"/>
-    <arg name="rvizconfig" default="$(find Catch2022_sim)/config/SCARA_arm.rviz"/>
+    <arg name = "model" default="$(find catch2022_sim)/urdf/SCARA_sample.urdf"/>
+    <arg name="rvizconfig" default="$(find catch2022_sim)/config/SCARA_arm.rviz"/>
     <arg name="mode" default = "sim"/>
 
-    <param name="robot_description" textfile="$(find Catch2022_sim)/urdf/SCARA_sample.urdf" />
+    <param name="robot_description" textfile="$(find catch2022_sim)/urdf/SCARA_sample.urdf" />
 
     <node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rvizconfig) -f base_link" />
 
-    <node name="SCARA_rviz" pkg="Catch2022_sim" type="SCARA_rviz.py" output="screen" />
+    <node name="SCARA_rviz" pkg="catch2022_sim" type="SCARA_rviz.py" output="screen" />
     
     <group unless ="$(eval mode == 'sim')">
-        <node name="SCARA_test" pkg="Catch2022_sim" type="SCARA_test.py" output="screen" />
+        <node name="SCARA_test" pkg="catch2022_sim" type="SCARA_test.py" output="screen" />
     </group>
     <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
 
@@ -24,16 +24,16 @@
 
 
 <!--<launch>
-    <arg name="model" default="$(find Catch2022_sim)/urdf/SCARA_sample.urdf" />
-    <arg name="rvizconfig" default="$(find Catch2022_sim)/config/SCARA_arm.rviz" />
+    <arg name="model" default="$(find catch2022_sim)/urdf/SCARA_sample.urdf" />
+    <arg name="rvizconfig" default="$(find catch2022_sim)/config/SCARA_arm.rviz" />
     <node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rvizconfig) -f base_link" />
 
     <include file="$(find gazebo_ros)/launch/empty_world.launch"/>
     <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model" args="-param robot_description -urdf -model SCARA_sample" />
-    <param name="robot_description" textfile="$(find Catch2022_sim)/urdf/SCARA_sample.urdf" />
+    <param name="robot_description" textfile="$(find catch2022_sim)/urdf/SCARA_sample.urdf" />
    
    
-    <node name="SCARA_rviz" pkg="Catch2022_sim" type="SCARA_rviz.py" output="screen"/>
+    <node name="SCARA_rviz" pkg="catch2022_sim" type="SCARA_rviz.py" output="screen"/>
     <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
 
     <rosparam>

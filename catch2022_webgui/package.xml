@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>catch2022_webGUI</name>
+  <name>catch2022_webgui</name>
   <version>0.0.0</version>
-  <description>The catch2022_webGUI package</description>
+  <description>The catch2022_webgui package</description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag -->
   <!-- Example:  -->

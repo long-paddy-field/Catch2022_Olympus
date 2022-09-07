@@ -40,8 +40,15 @@ class position_converter():
     def move_cmd_callback(self,msg):
         self.enable2 = True
         self.move_cmd.data = msg.data
+        rospy.loginfo("座標")
+        rospy.loginfo(msg.data)
         result = self.cartesian_to_rad(self.move_cmd.data[0],self.move_cmd.data[1])
         self.move_rad.data = [result[0],result[1]]
+        rospy.loginfo("角度")
+        rospy.loginfo(self.move_rad.data)
+        rospy.loginfo("逆変換")
+        result2 = self.rad_to_cartesian(result[0],result[1])
+        rospy.loginfo(result2)
     
     def servo_cmd_callback(self,msg):
         # self.enable3 = True
@@ -58,6 +65,7 @@ class position_converter():
     def current_angle_callback(self,msg):
         self.enable1 = True
         self.current_angle.data = msg.data
+        # rospy.loginfo(self.current_angle.data)
         result = self.rad_to_cartesian(self.current_angle.data[0],self.current_angle.data[1])
         self.current_position.data = [result[0],result[1]]
     
@@ -67,7 +75,7 @@ class position_converter():
         return x,y
 
     def cartesian_to_rad(self, x,y):
-        rad1 = self.sign * math.acos(((x**2)+(y**2)+(self.l1**2)-(self.l2**2))/(2*self.l1*math.sqrt(x**2+y**2)))
+        rad1 = -self.sign * math.acos(((x**2)+(y**2)+(self.l1**2)-(self.l2**2))/(2*self.l1*math.sqrt(x**2+y**2)))
         rad2 = math.atan((y-self.l1*math.sin(rad1))/(x-self.l1*math.cos(rad1)))-rad1
         return rad1,rad2
     
@@ -82,7 +90,6 @@ class position_converter():
             if self.enable1:
                 self.pub_current_position.publish(self.current_position)
             if self.enable2:
-
                 self.pub_move_rad.publish(self.move_rad)
                 self.pub_servo_angle.publish(self.servo_angle)
                 

@@ -17,6 +17,7 @@ class joy_controller():
         
         self.delta_x = 0
         self.delta_y = 0
+        
         self.current_x = 0
         self.current_y = 0
         self.move_cmd = Float32MultiArray()
@@ -31,12 +32,12 @@ class joy_controller():
         self.delta_x = -0.01*msg.axes[0] - 0.0005*msg.axes[4]
         self.delta_y =  0.01*msg.axes[1] + 0.0005*msg.axes[5]
         self.buttons = msg.buttons
+
     
     def current_position_callback(self,msg):
-        self.enable = True
         self.current_x = msg.data[0]
         self.current_y = msg.data[1]
-
+        self.enable = True
     
     def update(self):
         while not rospy.is_shutdown():
