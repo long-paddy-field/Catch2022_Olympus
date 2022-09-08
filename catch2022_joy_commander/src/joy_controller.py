@@ -23,6 +23,8 @@ class joy_controller():
         self.move_cmd = Float32MultiArray()
         self.buttons = list()
         
+        self.servo_cmd = Bool(data = True)
+        
         self.enable = False
         
         self.r = rospy.Rate(10)
@@ -46,9 +48,14 @@ class joy_controller():
     
     def update(self):
         while not rospy.is_shutdown():
-            if self.enable:
+            if self.enable and not len(self.buttons) == 0:
                 self.move_cmd.data = [self.current_x+self.delta_x,self.current_y+self.delta_y]
-                self.pub_move_cmd.publish(self.move_cmd)
+                
+                if self.buttons[10]:    #サーボの向き変更
+                    self.servo_cmd.data = not self.servo_cmd.data
+
+                self.pub_move_cmd.publish(self.move_cmd)                
+                self.pub_servo_cmd.publish(self.servo_cmd)
             self.r.sleep()
             
     

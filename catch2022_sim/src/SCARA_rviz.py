@@ -5,9 +5,7 @@ from typing             import List
 from sensor_msgs.msg    import JointState
 from std_msgs.msg       import Header
 from std_msgs.msg       import Float32MultiArray
-from std_msgs.msg       import Bool
-from std_msgs.msg       import Int8
-
+from std_msgs.msg       import Float32
 
 class simulator():
     def __init__(self,field_color):
@@ -32,6 +30,7 @@ class simulator():
         
         
         self.move_rad            = Float32MultiArray()
+        self.servo_angle = Float32(data=0)
 
         self.r = rospy.Rate(100)
         self.update()

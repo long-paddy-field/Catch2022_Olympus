@@ -1,9 +1,7 @@
 cmake_minimum_required(VERSION 3.0.2)
-<<<<<<< HEAD:catch2022_webGUI/CMakeLists.txt
-project(catch2022_webGUI)
-=======
+
 project(catch2022_webgui)
->>>>>>> d39805ebf22e5906571a978e5512046f2db58688:catch2022_webgui/CMakeLists.txt
+
 
 ## Compile as C++11, supported in ROS Kinetic and newer
 # add_compile_options(-std=c++11)

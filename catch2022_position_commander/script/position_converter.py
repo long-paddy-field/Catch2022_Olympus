@@ -45,22 +45,15 @@ class position_converter():
     def move_cmd_callback(self,msg):
         self.enable2 = True
         self.move_cmd.data = msg.data
-        # rospy.loginfo("座標")
-        # rospy.loginfo(msg.data)
         result = self.cartesian_to_rad(self.move_cmd.data[0],self.move_cmd.data[1])
         self.move_rad.data = [result[0],result[1]]
-        # rospy.loginfo("角度")
-        # rospy.loginfo(self.move_rad.data)
-        # rospy.loginfo("逆変換")
-        # result2 = self.rad_to_cartesian(result[0],result[1])
-        # rospy.loginfo(result2)
     
     def servo_cmd_callback(self,msg):
         # self.enable3 = True
         if msg.data == True:
             self.servo_angle.data = -1 * (self.current_angle.data[0]+self.current_angle.data[1])
         else :
-            self.servo_angle.data = math.pi - (self.current_angle.data[0]+self.current_angle.data[1])
+            self.servo_angle.data = math.pi/2 - (self.current_angle.data[0]+self.current_angle.data[1])
             
         if self.servo_angle.data < 0:
             self.servo_angle.data += math.pi
@@ -89,22 +82,7 @@ class position_converter():
         elif self.field == "blue":
             rad1 = (-1*math.acos(((x**2)+(y**2)+(self.l1**2)-(self.l2**2))/(2*self.l1*math.sqrt(x**2+y**2))))+math.atan2(y,x)
             
-        # rad1_2 = (-1*math.acos(((x**2)+(y**2)+(self.l1**2)-(self.l2**2))/(2*self.l1*math.sqrt(x**2+y**2))))+math.atan2(y,x)
-        
-        # rospy.loginfo("%f",math.atan2(y,x))
-        # nya = min(math.fabs(self.past_rad1 - rad1_1),min(math.fabs(self.past_rad1 + rad1_1),min(math.fabs(self.past_rad1 - rad1_2),math.fabs(self.past_rad1 + rad1_2))))
-        # if nya == math.fabs(self.past_rad1 - rad1_1):
-        #     rad1 = rad1_1
-        # elif nya == math.fabs(self.past_rad1 + rad1_1):
-        #     rad1 = -1*rad1_1
-        # elif nya == math.fabs(self.past_rad1 - rad1_2):
-        #     rad1 = rad1_2
-        # else :
-        #     rad1 = -1 * rad1_2
-        rad2 = math.atan2(y-self.l1*math.sin(rad1),x-self.l1*math.cos(rad1))-rad1
-        self.past_rad1 = rad1
-        # rospy.loginfo("%f,%f,%f",rad1_1,rad1_2,rad2)
-        
+        rad2 = math.atan2(y-self.l1*math.sin(rad1),x-self.l1*math.cos(rad1))-rad1        
         return rad1,rad2
     
     def poi(self, arg: float):
