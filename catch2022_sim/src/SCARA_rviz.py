@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
-
 import rospy
 import math
+from typing             import List
 from sensor_msgs.msg    import JointState
 from std_msgs.msg       import Header
 from std_msgs.msg       import Float32MultiArray
-from std_msgs.msg       import Float32
+from std_msgs.msg       import Bool
+from std_msgs.msg       import Int8
 
 
 class simulator():
@@ -102,18 +103,18 @@ if __name__ == "__main__":
 #     def current_state_callback(self,msg):
 #         self.task_num = msg.data    
 
-#     def update(self):
-#         rospy.loginfo("SCARA_rviz : enter main routine")
-#         while not rospy.is_shutdown():
-#             self.rviz_msg.header.stamp = rospy.Time.now()
+    def update(self):
+        rospy.loginfo("SCARA_rviz : enter main routine")
+        while not rospy.is_shutdown():
+            self.rviz_msg.header.stamp = rospy.Time.now()
             
-#             rospy.loginfo(self.rviz_msg.position)
-#             self.pub_joint_states.publish(self.rviz_msg)
-#             self.pub_current_position.publish(self.current_position)
-#             self.rate.sleep()
+            rospy.loginfo(self.rviz_msg.position)
+            self.pub_joint_states.publish(self.rviz_msg)
+            self.pub_current_position.publish(self.rviz_cmd)
+            self.rate.sleep()
 
 
-# if __name__ == "__main__":
-#     rospy.init_node("SCARA_rviz")
-#     func = rviz_simulator()
-#     rospy.loginfo("SCARA_rviz : end process")
+if __name__ == "__main__":
+    rospy.init_node("SCARA_rviz")
+    func = rviz_simulator()
+    rospy.loginfo("SCARA_rviz : end process")

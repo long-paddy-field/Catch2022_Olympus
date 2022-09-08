@@ -41,10 +41,10 @@ class Jaguar_Indicator:
         dst_grey = cv2.cvtColor(result,cv2.COLOR_BGR2GRAY)
         _,dst_bi = cv2.threshold(dst_grey,50,200,THRESH_BINARY)
         # cv2.imshow("edge",dst_bi)
-#        my_circles = cv2.HoughCircles(dst_bi,cv2.HOUGH_GRADIENT,1,80, param1=100,param2=30,minRadius=0.084/self.pic_to_m,maxRadius=0.092/self.pic_to_m)
+        #my_circles = cv2.HoughCircles(dst_bi,cv2.HOUGH_GRADIENT,1,80, param1=100,param2=30,minRadius=0.084/self.pic_to_m,maxRadius=0.092/self.pic_to_m)
         self.my_circles = cv2.HoughCircles(dst_bi,cv2.HOUGH_GRADIENT,1,80, param1=100,param2=30,minRadius=75,maxRadius=200)
                   
-        if not isinstance(self.my_circles,np.ndarray) :
+        if not isinstance(self.my_circles,np.ndarray):
             rospy.loginfo("Circle is not found")
             no_array = np.array([0,0,0])
             cv2.imshow("img",frame)
@@ -64,7 +64,7 @@ class Jaguar_Indicator:
         return self.my_circles
     
     def pixel_to_meter(self):
-        self.meter_circles = 1 * self.my_circles
+        self.meter_circles = 0.01 * self.my_circles
         
         # for i in self.my_circles[0,:]:
         #     self.pixel_x = i[0]
@@ -80,16 +80,17 @@ class Jaguar_Indicator:
     
 
     def current_position_callback(self):
-        self.cam_world_x = self.current_position.data[0]#ロボット座標からみたcamの座標
-        self.cam_world_y = self.current_position.data[1]
+        # self.meter_circles =[1.2,0.7,0.5]
+        self.cam_world_x = 0.3#self.current_position.data[0]#ロボット座標からみたcamの座標
+        self.cam_world_y = 0.3#self.current_position.data[1]
 
         for i in self.meter_circles[0,:]:
             self.edge_jaguar_x =i[0]#camの左上を原点としたjaguarの座標
             self.edge_jaguar_y =i[1]
         
             #camの左上を原点としたcamの中心の座標
-            self.edge_cam_x = 1*960 #pixel単位からm単位に
-            self.edge_cam_y = 1*540
+            self.edge_cam_x = 0.96#1*960 #pixel単位からm単位に
+            self.edge_cam_y = 0.54#1*540
 
 
 
@@ -103,6 +104,7 @@ class Jaguar_Indicator:
         #     self.jaguar_position_x = (i[0]*(math.sin(self.current_angle.data[0]+self.current_angle[1]))+i[1]*(math.cos(self.current_angle.data[0]+self.current_angle[1])))+self.current_position.data[0]
         #     self.jaguar_position_y = (i[0]*(math.cos(self.current_angle.data[0]+self.current_angle[1]))+i[1]*(math.sin(self.current_angle.data[0]+self.current_angle[1])))+self.current_position.data[1]
         #     self.jaguar_position = np.array([self.jaguar_position_x,self.jaguar_position_y])
+            rospy.loginfo(self.jaguar_position)
             self.pub_jaguar_position.publish(self.jaguar_position)
 
     def update(self):
@@ -116,7 +118,7 @@ class Jaguar_Indicator:
     
 if __name__=='__main__':
     try:
-        func = Jaguar_Indicator(cam_ch=4,loop_rate=50)
+        func = Jaguar_Indicator(cam_ch=0,loop_rate=50) #cam_ch 4
     except:
         rospy.logwarn("jaguar_indicator : something wrong")
     finally:
