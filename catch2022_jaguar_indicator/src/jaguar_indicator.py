@@ -41,7 +41,7 @@ class Jaguar_Indicator:
         dst_grey = cv2.cvtColor(result,cv2.COLOR_BGR2GRAY)
         _,dst_bi = cv2.threshold(dst_grey,50,200,THRESH_BINARY)
         # cv2.imshow("edge",dst_bi)
-#        my_circles = cv2.HoughCircles(dst_bi,cv2.HOUGH_GRADIENT,1,80, param1=100,param2=30,minRadius=0.084/self.pic_to_m,maxRadius=0.092/self.pic_to_m)
+        #my_circles = cv2.HoughCircles(dst_bi,cv2.HOUGH_GRADIENT,1,80, param1=100,param2=30,minRadius=0.084/self.pic_to_m,maxRadius=0.092/self.pic_to_m)
         self.my_circles = cv2.HoughCircles(dst_bi,cv2.HOUGH_GRADIENT,1,80, param1=100,param2=30,minRadius=75,maxRadius=200)
                   
         if not isinstance(self.my_circles,np.ndarray):

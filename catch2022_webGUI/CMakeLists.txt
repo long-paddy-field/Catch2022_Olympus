@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0.2)
-project(Catch2022_task_manager)
+project(catch2022_webGUI)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
 # add_compile_options(-std=c++11)
@@ -8,11 +8,9 @@ project(Catch2022_task_manager)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
+  roscpp
   rospy
-  smach
-  smach_ros
   std_msgs
-  tf
 )
 
 ## System dependencies are found with CMake's conventions
@@ -106,8 +104,8 @@ find_package(catkin REQUIRED COMPONENTS
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
 #  INCLUDE_DIRS include
-#  LIBRARIES Catch2022_task_manager
-#  CATKIN_DEPENDS rospy smach smach_ros std_msgs tf
+#  LIBRARIES Catch2022_webGUI
+#  CATKIN_DEPENDS roscpp rospy std_msgs
 #  DEPENDS system_lib
 )
 
@@ -124,7 +122,7 @@ include_directories(
 
 ## Declare a C++ library
 # add_library(${PROJECT_NAME}
-#   src/${PROJECT_NAME}/Catch2022_task_manager.cpp
+#   src/${PROJECT_NAME}/Catch2022_webGUI.cpp
 # )
 
 ## Add cmake target dependencies of the library
@@ -135,7 +133,7 @@ include_directories(
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-# add_executable(${PROJECT_NAME}_node src/Catch2022_task_manager_node.cpp)
+# add_executable(${PROJECT_NAME}_node src/Catch2022_webGUI_node.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -199,7 +197,7 @@ include_directories(
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_Catch2022_task_manager.cpp)
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_Catch2022_webGUI.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()

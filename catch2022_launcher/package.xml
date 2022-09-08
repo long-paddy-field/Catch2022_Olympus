@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>Catch2022_launcher</name>
+  <name>catch2022_launcher</name>
   <version>0.0.0</version>
-  <description>The Catch2022_launcher package</description>
+  <description>The catch2022_launcher package</description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag -->
   <!-- Example:  -->
