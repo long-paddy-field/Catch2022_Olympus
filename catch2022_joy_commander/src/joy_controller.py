@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 #役割：ジョイコン入力の読み取り、各部への伝達（ボタン）
 
-import queue
 import rospy
 from std_msgs.msg       import Float32MultiArray
 from std_msgs.msg       import Bool
 from sensor_msgs.msg    import Joy
 
 class joy_controller():
-    def __init__(self):
+    def __init__(self,field_color):
+        self.field = field_color
         self.pub_move_cmd           = rospy.Publisher("move_cmd",Float32MultiArray,queue_size=100)
         self.pub_servo_cmd          = rospy.Publisher("servo_cmd",Bool,queue_size=100)
         
@@ -29,8 +29,13 @@ class joy_controller():
         self.update()
         
     def joy_callback(self,msg):
-        self.delta_x = -0.01*msg.axes[0] - 0.0005*msg.axes[4]
-        self.delta_y =  0.01*msg.axes[1] + 0.0005*msg.axes[5]
+        if self.field == "blue":
+            self.delta_x = -0.01*msg.axes[0] - 0.0005*msg.axes[4]
+            self.delta_y =  0.01*msg.axes[1] + 0.0005*msg.axes[5]
+        elif self.field == "red":
+            self.delta_x =  0.01*msg.axes[0] + 0.0005*msg.axes[4]
+            self.delta_y = -0.01*msg.axes[1] - 0.0005*msg.axes[5]
+            
         self.buttons = msg.buttons
 
     
@@ -49,7 +54,8 @@ class joy_controller():
     
 if __name__ == '__main__':
     rospy.init_node('joy_controller')
-    arg = joy_controller()
+    field_color = rospy.get_param("~field_color")
+    arg = joy_controller(field_color)
     rospy.loginfo("joy_controller : process_end")
 
 # import queue

@@ -9,7 +9,9 @@ from std_msgs.msg       import Float32
 
 
 class simulator():
-    def __init__(self):
+    def __init__(self,field_color):
+        self.field = field_color
+        
         self.pub_joint_states    = rospy.Publisher("joint_states",JointState,queue_size = 100)
         self.pub_current_angle   = rospy.Publisher("current_angle",Float32MultiArray,queue_size = 100)
         
@@ -19,9 +21,15 @@ class simulator():
         self.joint_states        = JointState()
         self.joint_states.header = Header()
         self.joint_states.name   = ['stand_arm1', 'arm1_arm2', 'arm2_linear', 'linear_wrist']
-        self.joint_states.position = [2*math.pi/3,-2*math.pi/3,0,0]
         
-        self.current_angle       = Float32MultiArray(data=[2*math.pi/3,-2*math.pi/3])
+        if self.field == "red":
+            self.joint_states.position = [math.pi/6,-2*math.pi/3,0,0]
+            self.current_angle       = Float32MultiArray(data=[math.pi/6,-2*math.pi/3])
+        elif self.field == "blue":
+            self.joint_states.position = [-1*math.pi/6,2*math.pi/3,0,0]
+            self.current_angle       = Float32MultiArray(data=[-1*math.pi/6,2*math.pi/3])
+        
+        
         self.move_rad            = Float32MultiArray()
         self.servo_angle         = Float32(data = 0) 
 
@@ -46,7 +54,8 @@ class simulator():
 
 if __name__ == "__main__":
     rospy.init_node("SCARA_rviz")
-    func = simulator()
+    field_color = rospy.get_param("~field_color")
+    func = simulator(field_color)
     rospy.loginfo("SCARA_rviz : end process")
 
 # class rviz_simulator():

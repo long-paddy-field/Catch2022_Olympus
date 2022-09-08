@@ -4,10 +4,15 @@
     <arg name="model" default="$(find catch2022_sim)/urdf/SCARA_sample.urdf" />
     <arg name="rvizconfig" default="$(find catch2022_sim)/config/SCARA_arm.rviz" />
     <arg name="mode" default="real" />
+    <arg name="field_color" default="blue"/>
 
     <node name = "joy_node" pkg = "joy" type = "joy_node"/>
-    <node name = "joy_controller" pkg = "catch2022_joy_commander" type = "joy_controller.py" output = "screen"/>
-    <node name = "position_converter" pkg = "catch2022_position_commander" type = "position_converter.py" output = "screen"/>
+    <node name = "joy_controller" pkg = "catch2022_joy_commander" type = "joy_controller.py" output = "screen">
+        <param name="field_color" value="$(arg field_color)" />
+    </node>
+    <node name = "position_converter" pkg = "catch2022_position_commander" type = "position_converter.py" output = "screen">
+        <param name="field_color" value="$(arg field_color)" />
+    </node>
 
     <!-- <node name = "smach_viewer" pkg = "smach_viewer" type = "smach_viewer.py"/> -->
     <!-- <node name = "task_manager" pkg = "catch2022_task_manager" type = "task_manager.py" output = "screen"/> -->
@@ -23,7 +28,9 @@
 
     <group if="$(eval mode == 'sim')">
         <param name="robot_description" textfile="$(find catch2022_sim)/urdf/SCARA_sample.urdf" />
-        <node name="SCARA_rviz" pkg="catch2022_sim" type = "SCARA_rviz.py" output="screen"/>
+        <node name="SCARA_rviz" pkg="catch2022_sim" type = "SCARA_rviz.py" output="screen">
+            <param name="field_color" value="$(arg field_color)" />        
+        </node>
         <node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rvizconfig) -f base_link" />
         <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
     </group>
