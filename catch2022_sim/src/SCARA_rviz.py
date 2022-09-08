@@ -32,7 +32,6 @@ class simulator():
         
         
         self.move_rad            = Float32MultiArray()
-        self.servo_angle         = Float32(data = 0) 
 
         self.r = rospy.Rate(100)
         self.update()
@@ -103,18 +102,18 @@ if __name__ == "__main__":
 #     def current_state_callback(self,msg):
 #         self.task_num = msg.data    
 
-    def update(self):
-        rospy.loginfo("SCARA_rviz : enter main routine")
-        while not rospy.is_shutdown():
-            self.rviz_msg.header.stamp = rospy.Time.now()
+#     def update(self):
+#         rospy.loginfo("SCARA_rviz : enter main routine")
+#         while not rospy.is_shutdown():
+#             self.rviz_msg.header.stamp = rospy.Time.now()
             
-            rospy.loginfo(self.rviz_msg.position)
-            self.pub_joint_states.publish(self.rviz_msg)
-            self.pub_current_position.publish(self.rviz_cmd)
-            self.rate.sleep()
+#             rospy.loginfo(self.rviz_msg.position)
+#             self.pub_joint_states.publish(self.rviz_msg)
+#             self.pub_current_position.publish(self.rviz_cmd)
+#             self.rate.sleep()
 
 
-if __name__ == "__main__":
-    rospy.init_node("SCARA_rviz")
-    func = rviz_simulator()
-    rospy.loginfo("SCARA_rviz : end process")
+# if __name__ == "__main__":
+#     rospy.init_node("SCARA_rviz")
+#     func = rviz_simulator()
+#     rospy.loginfo("SCARA_rviz : end process")
