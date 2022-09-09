@@ -2,7 +2,8 @@
   <div class="hello no_scroll">
     <!-- {{ servoAngle?.data }} -->
     <!-- <v-slider v-model="servoRef" label="track-color" v-on:update:model-value="() => { servoAngleTopic.publish({ data: servoRef }) }"></v-slider> -->
-    Arm0 angle
+    <round-slider v-on:input="(value:number)=>{num=value}"></round-slider>
+    <!-- Arm0 angle
     <v-slider v-model="moveRadRef0" label="track-color" max=250 thumb-label v-on:update:model-value="() => { moveRadTopic.publish({ data: [moveRadRef0*Math.PI/180, moveRadRef1*Math.PI/180] }) }"></v-slider>
     Arm1 angle
     <v-slider v-model="moveRadRef1" label="track-color" max=276 thumb-label v-on:update:model-value="() => { moveRadTopic.publish({ data: [moveRadRef0*Math.PI/180, moveRadRef1*Math.PI/180] }) }"></v-slider>
@@ -13,9 +14,9 @@
     Pmp0
     <v-switch v-model="pmpStateRef0" v-on:update:model-value="() => { pmpStateTopic.publish({ data:Number(pmpStateRef1)<<1|Number(pmpStateRef0) }) }"></v-switch>
     Pmp1
-    <v-switch v-model="pmpStateRef1" v-on:update:model-value="() => { pmpStateTopic.publish({ data:Number(pmpStateRef1)<<1|Number(pmpStateRef0)  }) }"></v-switch>
+    <v-switch v-model="pmpStateRef1" v-on:update:model-value="() => { pmpStateTopic.publish({ data:Number(pmpStateRef1)<<1|Number(pmpStateRef0)  }) }"></v-switch> -->
     Sensor Status
-    {{isGrabbed?.data}}
+    {{num}}
   </div>
 
 </template>
@@ -28,6 +29,7 @@ import { RoundSlider } from "vue-round-slider/src/index2.js"
 type floatType = {
   data: number
 }
+const num = ref<number>(0)
 let drawer = ref<boolean>(false);
 const servoAngleRef = ref<number>(0)
 const moveRadRef0 = ref<number>(0)

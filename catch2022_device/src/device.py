@@ -8,6 +8,7 @@ from typing import List
 from std_msgs.msg import Float32MultiArray
 from std_msgs.msg import Float32
 from std_msgs.msg import Int8MultiArray
+from std_msgs.msg import Int16MultiArray
 from std_msgs.msg import Int32MultiArray
 from sensor_msgs.msg import JointState
 from std_msgs.msg import Int8
@@ -20,8 +21,8 @@ import struct
 import math
 import serial.tools.list_ports
 
-port = serial.tools.list_ports.comports()[0].device
-# port="/dev/pts/4"
+# port = serial.tools.list_ports.comports()[0].device
+port="/dev/pts/4"
 mode = "real"
 
 
@@ -52,16 +53,13 @@ class device():
     def emergency_callback(self, msg):
         self.emergency = msg.data
 
-    def is_blue_callback(self, msg):
-        if msg.data == True:
-            self.sign = 1
-        else:
-            self.sign = -1
+    def led_hsv_callback(self, msg):
+        self.led_hsv = msg.data
 
     def setup(self):
         global port
         global mode
-        self.uart = serial.Serial(port, 115200)
+        # self.uart = serial.Serial(port, 115200)
 
         self.pub_current_angle = rospy.Publisher('current_angle', Float32MultiArray, queue_size=1)
         self.pub_is_grabbed = rospy.Publisher('is_grabbed', Int8, queue_size=1)
@@ -74,6 +72,7 @@ class device():
         self.sub_stepper_state = rospy.Subscriber('stepper_state', Int8, self.stepper_state_callback, queue_size=1)
         self.sub_pmp_state = rospy.Subscriber('pmp_state', Int8, self.pmp_state_callback, queue_size=1)
         self.sub_emergency = rospy.Subscriber('emergency', Int8, self.emergency_callback, queue_size=1)
+        self.sub_led_hsv = rospy.Subscriber('led_hsv', Int16MultiArray, self.led_hsv_callback, queue_size=1)
         # self.sub_color_field = rospy.Subscriber('is_blue', Bool, self.is_blue_callback, queue_size=100)
         # self.msg = Float32MultiArray(data=[1, 2])
 
@@ -82,13 +81,14 @@ class device():
         self.move_cmd_theta = [90, 78]
         self.servo_angle = 0x00
         self.stepper_state = b'\x00'
-        self.pmp_state = False
+        self.pmp_state = b'\x00'
         self.emergency = b'\x00'
+        self.led_hsv = [0,0,0]
 
     def loop(self):
         while not rospy.is_shutdown():
             self.sendSerial()
-            self.receiveSerial()
+            # self.receiveSerial()
             # # if mode == "sim":
             #     self.current_angle = self.move_cmd_theta
             #     rospy.loginfo(self.current_angle)
@@ -97,9 +97,9 @@ class device():
             self.rate.sleep()
 
     def sendSerial(self):
-        uart_msg = struct.pack("<fffcc?c", *self.move_deg, self.servo_angle, self.stepper_state, self.pmp_state, self.emergency, b'\xFF')
-        # rospy.loginfo(uart_msg)
-        self.uart.write(uart_msg)
+        uart_msg = struct.pack("<fffcc?hccc", *self.move_deg, self.servo_angle, self.stepper_state, self.pmp_state, self.emergency, self.led_hsv[0],self.led_hsv[1].to_bytes(1,'little'),self.led_hsv[2].to_bytes(1,'little'),b'\xFF')
+        rospy.loginfo(uart_msg)
+        # self.uart.write(uart_msg)
 
     def receiveSerial(self):
         # 受信と整形

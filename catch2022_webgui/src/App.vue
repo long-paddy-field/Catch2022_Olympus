@@ -4,6 +4,7 @@
       <v-navigation-drawer v-model="drawer" temporary>
         <v-list density="compact" nav>
           <v-list-item prepend-icon="mdi-view-dashboard" title="Home" value="home" to='/'></v-list-item>
+          <v-list-item prepend-icon="mdi-view-dashboard" title="Home" value="home" to='/visual'></v-list-item>
           <v-list-item prepend-icon="mdi-forum" title="About" value="about" to='/about'></v-list-item>
           <v-list-item prepend-icon="mdi-reload" title="Reload" value="reload" @click="() => {
             $router.go(0)
