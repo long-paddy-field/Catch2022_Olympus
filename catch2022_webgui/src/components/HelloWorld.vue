@@ -29,8 +29,12 @@
           <v-slider v-model="servoAngleRef" label="track-color" max=360 thumb-label v-on:update:model-value="() => { servoAngleTopic.publish({ data: servoAngleRef*Math.PI/180 }) }"></v-slider>
           Stepper
           <v-slider v-model="stepperStateRef" :min="0" :max="5" :step="1" thumb-label v-on:update:model-value="() => { stepperStateTopic.publish({ data: stepperStateRef }) }"></v-slider>
-          Pmp
-          <v-switch v-model="pmpStateRef" v-on:update:model-value="() => { pmpStateTopic.publish({ data:pmpStateRef }) }"></v-switch>
+          Pmp0
+          <v-switch v-model="pmpStateRef0" v-on:update:model-value="() => { pmpStateTopic.publish({ data:Number(pmpStateRef1)<<1|Number(pmpStateRef0) }) }"></v-switch>
+          Pmp1
+          <v-switch v-model="pmpStateRef1" v-on:update:model-value="() => { pmpStateTopic.publish({ data:Number(pmpStateRef1)<<1|Number(pmpStateRef0)  }) }"></v-switch>
+          Sensor Status
+          {{isGrabbed?.data}}
         </div>
       </v-main>
     </v-app>
@@ -50,7 +54,8 @@ const servoAngleRef = ref<number>(0)
 const moveRadRef0 = ref<number>(0)
 const moveRadRef1 = ref<number>(0)
 const stepperStateRef = ref<number>(0)
-const pmpStateRef = ref<boolean>(false)
+const pmpStateRef0 = ref<boolean>(false)
+const pmpStateRef1 = ref<boolean>(false)
 const emergencyRef = ref<number>(0)
 const servoAngleTopic = createTopic<floatType>({
   name: '/servo_angle',
@@ -67,9 +72,9 @@ const stepperStateTopic = createTopic<floatType>({
   messageType: 'std_msgs/Int8',
 });
 const stepperState = useSubscriber(stepperStateTopic);
-const pmpStateTopic = createTopic<{ data: boolean }>({
+const pmpStateTopic = createTopic<{ data: number }>({
   name: '/pmp_state',
-  messageType: 'std_msgs/Bool',
+  messageType: 'std_msgs/Int8',
 });
 const pmpState = useSubscriber(pmpStateTopic);
 const emergencyTopic = createTopic<{ data: number }>({
@@ -77,6 +82,11 @@ const emergencyTopic = createTopic<{ data: number }>({
   messageType: 'std_msgs/Int8',
 });
 const emergency = useSubscriber(emergencyTopic);
+const isGrabbedTopic=createTopic<{ data: number }>({
+  name: '/is_grabbed',
+  messageType: 'std_msgs/Int8',
+});
+const isGrabbed = useSubscriber(isGrabbedTopic);
 
 onMounted(
   () => {
