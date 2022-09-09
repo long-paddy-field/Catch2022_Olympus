@@ -99,10 +99,10 @@ class Jaguar_Indicator:
                 self.cam_jaguar_x = self.edge_jaguar_x - self.edge_cam_x 
                 self.cam_jaguar_y = -(self.edge_jaguar_y - self.edge_cam_y)
                 #ジャガのロボット座標への座標変換
-                self.jaguar_x = self.cam_world_x+(self.cam_jaguar_x*(math.sin(math.radians(60+50)))+self.cam_jaguar_y*(math.cos(math.radians(60+50))))
-                self.jaguar_y = self.cam_world_y+(self.cam_jaguar_y*(math.sin(math.radians(60+50)))-self.cam_jaguar_x*(math.cos(math.radians(60+50))))
-                # self.jaguar_x = self.cam_world_x+(self.cam_jaguar_x*(math.sin(self.current_angle.data[0]+self.current_angle[1]))+self.cam_jaguar_y*(math.cos(self.current_angle.data[0]+self.current_angle[1])))
-                # self.jaguar_y = self.cam_world_y+(self.cam_jaguar_y*(math.sin(self.current_angle.data[0]+self.current_angle[1]))-self.cam_jaguar_x*(math.cos(self.current_angle.data[0]+self.current_angle[1])))
+                # self.jaguar_x = self.cam_world_x+(self.cam_jaguar_x*(math.sin(math.radians(60+50)))+self.cam_jaguar_y*(math.cos(math.radians(60+50))))
+                # self.jaguar_y = self.cam_world_y+(self.cam_jaguar_y*(math.sin(math.radians(60+50)))-self.cam_jaguar_x*(math.cos(math.radians(60+50))))
+                self.jaguar_x = self.cam_world_x+(self.cam_jaguar_x*(math.sin(self.current_angle.data[0]+self.current_angle[1]))+self.cam_jaguar_y*(math.cos(self.current_angle.data[0]+self.current_angle[1])))
+                self.jaguar_y = self.cam_world_y+(self.cam_jaguar_y*(math.sin(self.current_angle.data[0]+self.current_angle[1]))-self.cam_jaguar_x*(math.cos(self.current_angle.data[0]+self.current_angle[1])))
                 self.jaguar_position = np.array([self.jaguar_x,self.jaguar_y])
             # for i in self.meter_list[0,:]:
             #     self.jaguar_position_x = (i[0]*(math.sin(self.current_angle.data[0]+self.current_angle[1]))+i[1]*(math.cos(self.current_angle.data[0]+self.current_angle[1])))+self.current_position.data[0]
