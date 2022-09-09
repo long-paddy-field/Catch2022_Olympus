@@ -133,7 +133,7 @@ class device():
         self.current_position.data = self.theta_to_cartesian(self.current_angle.data)
         self.theta_to_cartesian([0.5, 0.5])
         is_grabbed = Int8(data=msg[2])
-        self.pub_current_angle.publish(current_angle)
+        self.pub_current_angle.publish(self.current_angle)
         self.pub_is_grabbed.publish(is_grabbed)
 
         self.pub2.publish(self.current_position)
