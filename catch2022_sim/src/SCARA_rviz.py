@@ -5,97 +5,114 @@ from typing             import List
 from sensor_msgs.msg    import JointState
 from std_msgs.msg       import Header
 from std_msgs.msg       import Float32MultiArray
-from std_msgs.msg       import Bool
-from std_msgs.msg       import Int8
+from std_msgs.msg       import Float32
 
-class rviz_simulator():
-    def __init__(self):
-        rospy.loginfo("SCARA_rviz : constructor activated")
-        self.pub_joint_states       = rospy.Publisher("joint_states", JointState, queue_size=100)
-        self.pub_current_angle      = rospy.Publisher('current_angle', Float32MultiArray, queue_size=1)
-        self.pub_current_position   = rospy.Publisher('current_position',Float32MultiArray,queue_size=1)
-
-        self.sub_move_cmd           = rospy.Subscriber('move_cmd', Float32MultiArray, self.move_cmd_callback, queue_size=100)
-        self.sub_servo_cmd          = rospy.Subscriber('servo_cmd', Bool, self.servo_angle_callback, queue_size=100)
-        self.sub_color_field        = rospy.Subscriber('is_blue', Bool, self.is_blue_callback, queue_size=100)
-        self.sub_current_state      = rospy.Subscriber('current_state',Int8,self.current_state_callback,queue_size = 100)
+class simulator():
+    def __init__(self,field_color):
+        self.field = field_color
         
-        self.rviz_msg = JointState()
-        self.rviz_cmd = Float32MultiArray()
-        self.rate = rospy.Rate(100)
+        self.pub_joint_states    = rospy.Publisher("joint_states",JointState,queue_size = 100)
+        self.pub_current_angle   = rospy.Publisher("current_angle",Float32MultiArray,queue_size = 100)
+        
+        self.sub_move_rad        = rospy.Subscriber("move_rad",Float32MultiArray,self.move_rad_callback,queue_size=100)
+        self.sub_servo_angle     = rospy.Subscriber("servo_angle",Float32,self.servo_angle_callback,queue_size=100)
+        
+        self.joint_states        = JointState()
+        self.joint_states.header = Header()
+        self.joint_states.name   = ['stand_arm1', 'arm1_arm2', 'arm2_linear', 'linear_wrist']
+        
+        if self.field == "red":
+            self.joint_states.position = [math.pi/6,-2*math.pi/3,0,0]
+            self.current_angle       = Float32MultiArray(data=[math.pi/6,-2*math.pi/3])
+        elif self.field == "blue":
+            self.joint_states.position = [-1*math.pi/6,2*math.pi/3,0,0]
+            self.current_angle       = Float32MultiArray(data=[-1*math.pi/6,2*math.pi/3])
+        
+        
+        self.move_rad            = Float32MultiArray()
+        self.servo_angle = Float32(data=0)
 
-        self.rviz_msg.header = Header()
-        self.rviz_msg.name = ['stand_arm1', 'arm1_arm2', 'arm2_linear', 'linear_wrist']       
-        self.rviz_msg.position = [-2*math.pi/3, 2*math.pi/3, 0, 0]
-        self.rviz_cmd_theta = [0,0]
-        self.current_position = Float32MultiArray()
-        self.l1 = 0.6
-        self.l2 = 0.3
-        self.sign = 1
-        self.task_num = 1
+        self.r = rospy.Rate(100)
         self.update()
-    
-    def is_blue_callback(self, msg):
-        if self.task_num == 1:
-            if msg.data == True:
-                self.sign = 1
-            else:
-                self.sign = -1
-       
-    def servo_angle_callback(self, msg):
-        self.servo_cmd = msg.data
-        if msg.data == True:
-            self.servo_angle = -(self.servo_angle[0] + self.servo_angle[1])
-        elif msg.data == False:
-            self.servo_angle = math.pi/2 - (self.servo_angle[0] + self.servo_angle[1])
         
-        if self.servo_angle < 0:
-            self.servo_angle = self.servo_angle + math.pi
-        elif self.servo_angle > 2*math.pi:
-            self.servo_angle = self.servo_angle - pi
-            
-        self.rviz_msg.position[2] = math.pi*self.servo_angle/180    
-    
-    def move_cmd_callback(self,msg):
-        self.rviz_cmd.data = msg.data
-        self.rviz_cmd_theta = self.cartesian_to_theta(self.rviz_cmd.data)
-        self.rviz_msg.position = [self.rviz_cmd_theta[0],self.rviz_cmd_theta[1],0,0]
         
-    def current_state_callback(self,msg):
-        self.task_num = msg.data    
-
-    def theta_to_cartesian(self, theta: List[float]):
-        x = self.poi(self.l1 * math.cos(theta[0]) + self.l2*math.cos(theta[0]+theta[1]))
-        y = self.poi(self.l1 * math.sin(theta[0]) + self.l2*math.sin(theta[0]+theta[1]))
-        cartesian = list([x, y])
-        return cartesian
-
-    def cartesian_to_theta(self, cartesian: List[float]):
-        x = cartesian[0]
-        y = cartesian[1]
-        theta1 = self.sign * math.acos(((x**2)+(y**2)+(self.l1**2)-(self.l2**2))/(2*self.l1*math.sqrt(x**2+y**2)))
-        theta2 = math.atan((y-self.l1*math.sin(theta1))/(x-self.l1*math.cos(theta1)))-theta1
-        theta = list([theta1, theta2])
-        return theta
+    def move_rad_callback(self,msg):
+        self.move_rad.data = msg.data
+        self.current_angle.data = msg.data
     
-    def poi(self, arg: float):
-        if math.fabs(arg) < 0.001:
-            return 0
-        else:
-            return arg
-
+    def servo_angle_callback(self,msg):
+        self.servo_angle.data = msg.data
+    
     def update(self):
-        rospy.loginfo("SCARA_rviz : enter main routine")
         while not rospy.is_shutdown():
-            self.rviz_msg.header.stamp = rospy.Time.now()
-            
-            rospy.loginfo(self.rviz_msg.position)
-            self.pub_joint_states.publish(self.rviz_msg)
-            self.pub_current_position.publish(self.rviz_cmd)
-            self.rate.sleep()
-
+            self.joint_states.header.stamp = rospy.Time.now()
+            self.joint_states.position = [self.current_angle.data[0],self.current_angle.data[1],0,self.servo_angle.data]
+            self.pub_current_angle.publish(self.current_angle)
+            self.pub_joint_states.publish(self.joint_states)
+            self.r.sleep()
 
 if __name__ == "__main__":
     rospy.init_node("SCARA_rviz")
-    func = rviz_simulator()
+    field_color = rospy.get_param("~field_color")
+    func = simulator(field_color)
     rospy.loginfo("SCARA_rviz : end process")
+
+# class rviz_simulator():
+#     def __init__(self):
+#         self.pub_joint_states       = rospy.Publisher("joint_states", JointState, queue_size=100)
+#         self.pub_current_angle      = rospy.Publisher('current_angle', Float32MultiArray, queue_size=1)
+
+#         self.sub_move_rad           = rospy.Subscriber('move_rad', Float32MultiArray, self.move_rad_callback, queue_size=100)
+#         self.sub_servo_angle        = rospy.Subscriber('servo_angle', Float32MultiArray, self.servo_angle_callback, queue_size=100)
+        
+#         self.rviz_msg = JointState()
+#         self.rviz_msg.header = Header()
+#         self.rviz_msg.name = ['stand_arm1', 'arm1_arm2', 'arm2_linear', 'linear_wrist']       
+#         self.rviz_msg.position = [-2*math.pi/3, 2*math.pi/3, 0, 0]
+        
+#         self.rate = rospy.Rate(100)
+
+#         self.current_position = Float32MultiArray(data=[])
+#         self.l1 = 0.6
+#         self.l2 = 0.3
+#         self.sign = 1
+#         self.task_num = 1
+#         self.update()
+    
+#     def servo_angle_callback(self, msg):
+#         self.servo_cmd = msg.data
+#         if msg.data == True:
+#             self.servo_angle = -(self.servo_angle[0] + self.servo_angle[1])
+#         elif msg.data == False:
+#             self.servo_angle = math.pi/2 - (self.servo_angle[0] + self.servo_angle[1])
+        
+#         if self.servo_angle < 0:
+#             self.servo_angle = self.servo_angle + math.pi
+#         elif self.servo_angle > 2*math.pi:
+#             self.servo_angle = self.servo_angle - math.pi
+            
+#         self.rviz_msg.position[2] = math.pi*self.servo_angle/180    
+    
+#     def move_rad_callback(self,msg):
+#         self.rviz_cmd_rad = self.cartesian_to_rad(msg.data)
+#         self.rviz_msg.position = [self.rviz_cmd_rad[0],self.rviz_cmd_rad[1],0,0]
+#         self.current_position.data = msg.data
+        
+#     def current_state_callback(self,msg):
+#         self.task_num = msg.data    
+
+#     def update(self):
+#         rospy.loginfo("SCARA_rviz : enter main routine")
+#         while not rospy.is_shutdown():
+#             self.rviz_msg.header.stamp = rospy.Time.now()
+            
+#             rospy.loginfo(self.rviz_msg.position)
+#             self.pub_joint_states.publish(self.rviz_msg)
+#             self.pub_current_position.publish(self.rviz_cmd)
+#             self.rate.sleep()
+
+
+# if __name__ == "__main__":
+#     rospy.init_node("SCARA_rviz")
+#     func = rviz_simulator()
+#     rospy.loginfo("SCARA_rviz : end process")

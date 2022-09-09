@@ -10,9 +10,9 @@ from std_msgs.msg import Bool
 from std_msgs.msg import Float32
 
 class position_converter():
-    def __init__(self):
-        self.sub_is_blue            = rospy.Subscriber("is_blue",Bool,queue_size=100)
-
+    def __init__(self,field_color):
+        self.field = field_color
+        
         self.pub_move_rad           = rospy.Publisher("move_rad",Float32MultiArray,queue_size = 100)             
         self.pub_servo_angle        = rospy.Publisher("servo_angle",Float32,queue_size=100)
         self.sub_move_cmd           = rospy.Subscriber("move_cmd",Float32MultiArray,self.move_cmd_callback,queue_size=100)
@@ -28,11 +28,16 @@ class position_converter():
         self.current_position       = Float32MultiArray()
         self.current_angle          = Float32MultiArray()
         
+ 
+        rospy.loginfo(self.field)
+        
         self.l1     = 0.6
         self.l2     = 0.3
         self.enable1 = False
         self.enable2 = False
         self.enable3 = False
+        
+        self.past_rad1 = 0
         
         self.r = rospy.Rate(100)
         self.update()
@@ -40,22 +45,15 @@ class position_converter():
     def move_cmd_callback(self,msg):
         self.enable2 = True
         self.move_cmd.data = msg.data
-        rospy.loginfo("座標")
-        rospy.loginfo(msg.data)
         result = self.cartesian_to_rad(self.move_cmd.data[0],self.move_cmd.data[1])
         self.move_rad.data = [result[0],result[1]]
-        rospy.loginfo("角度")
-        rospy.loginfo(self.move_rad.data)
-        rospy.loginfo("逆変換")
-        result2 = self.rad_to_cartesian(result[0],result[1])
-        rospy.loginfo(result2)
     
     def servo_cmd_callback(self,msg):
         # self.enable3 = True
         if msg.data == True:
             self.servo_angle.data = -1 * (self.current_angle.data[0]+self.current_angle.data[1])
         else :
-            self.servo_angle.data = math.pi - (self.current_angle.data[0]+self.current_angle.data[1])
+            self.servo_angle.data = math.pi/2 - (self.current_angle.data[0]+self.current_angle.data[1])
             
         if self.servo_angle.data < 0:
             self.servo_angle.data += math.pi
@@ -63,11 +61,15 @@ class position_converter():
             self.servo_angle.data -= math.pi
     
     def current_angle_callback(self,msg):
-        self.enable1 = True
         self.current_angle.data = msg.data
         # rospy.loginfo(self.current_angle.data)
         result = self.rad_to_cartesian(self.current_angle.data[0],self.current_angle.data[1])
         self.current_position.data = [result[0],result[1]]
+        
+        if not self.enable1:
+            self.past_rad1 = result[0]
+        self.enable1 = True
+
     
     def rad_to_cartesian(self, rad0,rad1):
         x = self.poi(self.l1 * math.cos(rad0) + self.l2*math.cos(rad0+rad1))
@@ -75,8 +77,12 @@ class position_converter():
         return x,y
 
     def cartesian_to_rad(self, x,y):
-        rad1 = -self.sign * math.acos(((x**2)+(y**2)+(self.l1**2)-(self.l2**2))/(2*self.l1*math.sqrt(x**2+y**2)))
-        rad2 = math.atan((y-self.l1*math.sin(rad1))/(x-self.l1*math.cos(rad1)))-rad1
+        if self.field == "red":
+            rad1 = math.acos(((x**2)+(y**2)+(self.l1**2)-(self.l2**2))/(2*self.l1*math.sqrt(x**2+y**2)))+math.atan2(y,x)
+        elif self.field == "blue":
+            rad1 = (-1*math.acos(((x**2)+(y**2)+(self.l1**2)-(self.l2**2))/(2*self.l1*math.sqrt(x**2+y**2))))+math.atan2(y,x)
+            
+        rad2 = math.atan2(y-self.l1*math.sin(rad1),x-self.l1*math.cos(rad1))-rad1        
         return rad1,rad2
     
     def poi(self, arg: float):
@@ -95,6 +101,17 @@ class position_converter():
                 
             self.r.sleep()
             
+    def my_atan(self,x,y):
+        if x==0:
+            if y > 0:
+                return math.pi/2
+            else:
+                return -1 * math.pi/2
+        else:
+            return math.atan(y/x)
+        
+        
 if __name__=='__main__':
     rospy.init_node("position_converter")
-    arg = position_converter()
+    field_color = rospy.get_param("~field_color")
+    arg = position_converter(field_color)
