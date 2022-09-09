@@ -1,15 +1,8 @@
 <?xml version="1.0"?>
 <package format="2">
-<<<<<<< HEAD:catch2022_webGUI/package.xml
-  <name>catch2022_webGUI</name>
-  <version>0.0.0</version>
-  <description>The catch2022_webGUI package</description>
-=======
   <name>catch2022_webgui</name>
   <version>0.0.0</version>
   <description>The catch2022_webgui package</description>
->>>>>>> d39805ebf22e5906571a978e5512046f2db58688:catch2022_webgui/package.xml
-
   <!-- One maintainer tag required, multiple allowed, one person per tag -->
   <!-- Example:  -->
   <!-- <maintainer email="jane.doe@example.com">Jane Doe</maintainer> -->
