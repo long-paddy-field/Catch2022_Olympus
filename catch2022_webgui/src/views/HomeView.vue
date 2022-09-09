@@ -1,18 +1,18 @@
 <template>
-  <hello-world />
+  <controller-view />
 </template>
 
 <script lang="ts">
 import { defineComponent } from 'vue';
 
 // Components
-import HelloWorld from '../components/HelloWorld.vue';
+import ControllerView from '@/components/controllerView.vue';
 
 export default defineComponent({
   name: 'HomeView',
 
   components: {
-    HelloWorld,
-  },
+    ControllerView
+},
 });
 </script>
