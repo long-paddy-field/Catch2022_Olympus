@@ -37,6 +37,9 @@ class joy_controller():
         self.pub_start_cmd          = rospy.Publisher("start_cmd",Empty,queue_size=100)
         self.pub_is_handy           = rospy.Publisher("is_handy",Bool, queue_size=100)
         
+        self.pub_grab_cmd           = rospy.Publisher("grab_cmd",Empty,queue_size=100)
+        self.pub_release_cmd        = rospy.Publisher("release_cmd",Empty,queue_size=100)
+        
         self.sub_joy                = rospy.Subscriber("joy",Joy,self.joy_callback,queue_size=100)
         self.sub_current_position   = rospy.Subscriber("current_position",Float32MultiArray,self.current_position_callback,queue_size=100)
         
@@ -73,6 +76,7 @@ class joy_controller():
         if self.field == "blue":
             self.delta_x = -0.01*msg.axes[0] - 0.0005*msg.axes[4]
             self.delta_y =  0.01*msg.axes[1] + 0.0005*msg.axes[5]
+
         elif self.field == "red":
             self.delta_x =  0.01*msg.axes[0] + 0.0005*msg.axes[4]
             self.delta_y = -0.01*msg.axes[1] - 0.0005*msg.axes[5]
@@ -89,18 +93,22 @@ class joy_controller():
         while not rospy.is_shutdown():
             if self.enable and not len(self.buttons) == 0:
                 self.move_cmd.data = [self.current_x+self.delta_x,self.current_y+self.delta_y]
-                
+                                
                 if self.is_handy.data:
                     if self.btn0.is_enabled(self.buttons[0]):     #青シール側の把持のみ操作
                         if self.pmp_state.data < 2 :
                             self.pmp_state.data += 2
+                            self.pub_grab_cmd.publish()
                         else:
                             self.pmp_state.data -= 2
+                            self.pub_release_cmd.publish()
                     elif self.btn2.is_enabled(self.buttons[2]):   #赤シール側の把持のみ操作
                         if self.pmp_state.data % 2 == 0:
                             self.pmp_state.data += 1
+                            self.pub_grab_cmd.publish()
                         else:
                             self.pmp_state.data -= 1
+                            self.pub_release_cmd.publish()
                     
                     if self.btn1.is_enabled(self.buttons[1]):     #ワークはなす
                         self.pmp_state.data = 0
@@ -118,7 +126,6 @@ class joy_controller():
                     elif self.btn7.is_enabled(self.buttons[7]):   #ステッパ上昇
                         self.stepper_cmd.data = True
                         self.pub_stepper_cmd.publish(self.stepper_cmd)
-                    
                     self.pub_move_cmd.publish(self.move_cmd)                
                     self.pub_servo_cmd.publish(self.servo_cmd)
                     self.pub_pmp_state.publish(self.pmp_state)
