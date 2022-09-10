@@ -7,7 +7,6 @@ from cv2 import THRESH_BINARY
 from std_msgs.msg import Float32MultiArray
 import math
 
-
 class Jaguar_Indicator:
     def __init__(self,cam_ch,loop_rate):
         rospy.loginfo("jaguar_indicator : called constructor")
@@ -32,7 +31,7 @@ class Jaguar_Indicator:
         if ret == True:
             rospy.loginfo("success reading")
         else:
-            rospy.loginfo("fail to reading")
+            rospy.loginfo("failed to read")
         hsv_lower = np.array([30, 0, 0])
         hsv_upper = np.array([90, 255 ,127])
         hsv = cv2.cvtColor(frame,cv2.COLOR_BGR2HSV)
@@ -51,78 +50,84 @@ class Jaguar_Indicator:
             # cv2.imshow("bin",dst_bi)
             return no_array
         
-        # cv2.circle(frame,(200,200),10,(255,0,0),2) #検出された円を一個づつ参照できる
-        for i in self.my_circles[0,:]: #:で行を参照してる
+        # cv2.circle(frame,(200,200),10,(255,0,0),2) #検出された円を一個ずつ参照できる
+        # for i in self.my_circles[0,:]: #:で行を参照してる
             # draw the outer circle
-            cv2.circle(frame,(i[0],i[1]),i[2],(0,255,0),2)
-            rospy.loginfo("nya")
+            # cv2.circle(frame,(i[0],i[1]),i[2],(0,255,0),2)
+            # rospy.loginfo("nya")
             # draw the center of the circle
-            cv2.circle(frame,(i[0],i[1]),2,(0,0,255),3)
+            # cv2.circle(frame,(i[0],i[1]),2,(0,0,255),3)
 
         cv2.imshow("img", frame)
 
         return self.my_circles
     
-    def pixel_to_meter(self):
-        self.meter_circles = 0.01 * self.my_circles
+    # def pixel_to_meter(self):
+    #     self.meter_circles = 0.01 * self.my_circles
         
-        # for i in self.my_circles[0,:]:
-        #     self.pixel_x = i[0]
-        #     self.pixel_y = i[1]
-        #     self.pixel_radius = i[2]
-        # #実機で検証するところ
-        # self.meter_x = self.pixel_x
-        # self.meter_y = self.pixel_y
-        # self.meter_radius = self.pixel_radius 
-        # meter = list([self.meter_x,self.meter_y,self.meter_radius])
-        return self.meter_circles
+    #     # for i in self.my_circles[0,:]:
+    #     #     self.pixel_x = i[0]
+    #     #     self.pixel_y = i[1]
+    #     #     self.pixel_radius = i[2]
+    #     # #実機で検証するところ
+    #     # self.meter_x = self.pixel_x
+    #     # self.meter_y = self.pixel_y
+    #     # self.meter_radius = self.pixel_radius 
+    #     # meter = list([self.meter_x,self.meter_y,self.meter_radius])
+    #     return self.meter_circles
     
     
 
     def current_position_callback(self):
+        if isinstance(self.my_circles,np.ndarray) :
+            # rospy.loginfo("Circle is not found")
+            # no_array = np.array([0,0,0])
+            # return no_array
+            self.meter_circles = 0.01 * (self.my_circles)
         # self.meter_circles =[1.2,0.7,0.5]
-        self.cam_world_x = 0.3#self.current_position.data[0]#ロボット座標からみたcamの座標
-        self.cam_world_y = 0.3#self.current_position.data[1]
+            self.cam_world_x = self.current_position.data[0]#0.3#ロボット座標からみたcamの座標
+            self.cam_world_y = self.current_position.data[1]#0.3
 
-        for i in self.meter_circles[0,:]:
-            self.edge_jaguar_x =i[0]#camの左上を原点としたjaguarの座標
-            self.edge_jaguar_y =i[1]
+            for circle in self.meter_circles[0,:]:
+                self.edge_jaguar_x = circle[0]#camの左上を原点としたjaguarの座標
+                self.edge_jaguar_y = circle[1]
         
             #camの左上を原点としたcamの中心の座標
-            self.edge_cam_x = 0.96#1*960 #pixel単位からm単位に
-            self.edge_cam_y = 0.54#1*540
+                self.edge_cam_x = 0.96#1*960 #pixel単位からm単位に
+                self.edge_cam_y = 0.54#1*540
 
-
-
-            self.cam_jaguar_x = self.edge_jaguar_x - self.edge_cam_x 
-            self.cam_jaguar_y = -(self.edge_jaguar_y - self.edge_cam_y)
-            #ジャガのロボット座標への座標変換
-            self.jaguar_x = self.cam_world_x+(self.cam_jaguar_x*(math.sin(self.current_angle.data[0]+self.current_angle[1]))+self.cam_jaguar_y*(math.cos(self.current_angle.data[0]+self.current_angle[1])))
-            self.jaguar_y = self.cam_world_y+(-self.cam_jaguar_y*(math.sin(self.current_angle.data[0]+self.current_angle[1]))-self.cam_jaguar_x*(math.cos(self.current_angle.data[0]+self.current_angle[1])))
-            self.jaguar_position = np.array([self.jaguar_x,self.jaguar_y])
-        # for i in self.meter_list[0,:]:
-        #     self.jaguar_position_x = (i[0]*(math.sin(self.current_angle.data[0]+self.current_angle[1]))+i[1]*(math.cos(self.current_angle.data[0]+self.current_angle[1])))+self.current_position.data[0]
-        #     self.jaguar_position_y = (i[0]*(math.cos(self.current_angle.data[0]+self.current_angle[1]))+i[1]*(math.sin(self.current_angle.data[0]+self.current_angle[1])))+self.current_position.data[1]
-        #     self.jaguar_position = np.array([self.jaguar_position_x,self.jaguar_position_y])
-            rospy.loginfo(self.jaguar_position)
-            self.pub_jaguar_position.publish(self.jaguar_position)
+                self.cam_jaguar_x = self.edge_jaguar_x - self.edge_cam_x 
+                self.cam_jaguar_y = -(self.edge_jaguar_y - self.edge_cam_y)
+                #ジャガのロボット座標への座標変換
+                # self.jaguar_x = self.cam_world_x+(self.cam_jaguar_x*(math.sin(math.radians(60+50)))+self.cam_jaguar_y*(math.cos(math.radians(60+50))))
+                # self.jaguar_y = self.cam_world_y+(self.cam_jaguar_y*(math.sin(math.radians(60+50)))-self.cam_jaguar_x*(math.cos(math.radians(60+50))))
+                self.jaguar_x = self.cam_world_x+(self.cam_jaguar_x*(math.sin(self.current_angle.data[0]+self.current_angle[1]))+self.cam_jaguar_y*(math.cos(self.current_angle.data[0]+self.current_angle[1])))
+                self.jaguar_y = self.cam_world_y+(self.cam_jaguar_y*(math.sin(self.current_angle.data[0]+self.current_angle[1]))-self.cam_jaguar_x*(math.cos(self.current_angle.data[0]+self.current_angle[1])))
+                self.jaguar_position = np.array([self.jaguar_x,self.jaguar_y])
+            # for i in self.meter_list[0,:]:
+            #     self.jaguar_position_x = (i[0]*(math.sin(self.current_angle.data[0]+self.current_angle[1]))+i[1]*(math.cos(self.current_angle.data[0]+self.current_angle[1])))+self.current_position.data[0]
+            #     self.jaguar_position_y = (i[0]*(math.cos(self.current_angle.data[0]+self.current_angle[1]))+i[1]*(math.sin(self.current_angle.data[0]+self.current_angle[1])))+self.current_position.data[1]
+            #     self.jaguar_position = np.array([self.jaguar_position_x,self.jaguar_position_y])
+                rospy.loginfo(self.jaguar_position)
+                # self.pub_jaguar_position.publish(self.jaguar_position)
 
     def update(self):
-        got_circle = list()
+        self.got_circle = list()
         while not rospy.is_shutdown():
-            got_circle = self.getcircle( )
+            self.got_circle = self.getcircle()
+            self.current_position_callback()
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
-            rospy.loginfo(got_circle)
+            rospy.loginfo(self.got_circle)
             self.r.sleep()
-    
+
 if __name__=='__main__':
-    try:
-        func = Jaguar_Indicator(cam_ch=0,loop_rate=50) #cam_ch 4
-    except:
-        rospy.logwarn("jaguar_indicator : something wrong")
-    finally:
-        rospy.logwarn("jaguar_indicator : end process")
+    # try:
+    func = Jaguar_Indicator(cam_ch=4,loop_rate=50) #cam_ch 4
+    # except:
+    #     rospy.logwarn("jaguar_indicator : something wrong")
+    # finally:
+    #     rospy.logwarn("jaguar_indicator : end process")
 
 # import rospy
 # import cv2
