@@ -17,6 +17,7 @@ class Jaguar_Indicator:
         self.r = rospy.Rate(loop_rate)
         self.l1 = 0.6
         self.l2 = 0.3
+        self.jaguar_position = Float32MultiArray()
         self.current_position = Float32MultiArray()
         self.current_angle = Float32MultiArray()
         self.cv_cap= cv2.VideoCapture(cam_ch)
@@ -103,13 +104,13 @@ class Jaguar_Indicator:
                 # self.jaguar_y = self.cam_world_y+(self.cam_jaguar_y*(math.sin(math.radians(60+50)))-self.cam_jaguar_x*(math.cos(math.radians(60+50))))
                 self.jaguar_x = self.cam_world_x+(self.cam_jaguar_x*(math.sin(self.current_angle.data[0]+self.current_angle[1]))+self.cam_jaguar_y*(math.cos(self.current_angle.data[0]+self.current_angle[1])))
                 self.jaguar_y = self.cam_world_y+(self.cam_jaguar_y*(math.sin(self.current_angle.data[0]+self.current_angle[1]))-self.cam_jaguar_x*(math.cos(self.current_angle.data[0]+self.current_angle[1])))
-                self.jaguar_position = np.array([self.jaguar_x,self.jaguar_y])
+                self.jaguar_position.data = [self.jaguar_x,self.jaguar_y]
             # for i in self.meter_list[0,:]:
             #     self.jaguar_position_x = (i[0]*(math.sin(self.current_angle.data[0]+self.current_angle[1]))+i[1]*(math.cos(self.current_angle.data[0]+self.current_angle[1])))+self.current_position.data[0]
             #     self.jaguar_position_y = (i[0]*(math.cos(self.current_angle.data[0]+self.current_angle[1]))+i[1]*(math.sin(self.current_angle.data[0]+self.current_angle[1])))+self.current_position.data[1]
             #     self.jaguar_position = np.array([self.jaguar_position_x,self.jaguar_position_y])
-                rospy.loginfo(self.jaguar_position)
-                # self.pub_jaguar_position.publish(self.jaguar_position)
+                rospy.loginfo(self.jaguar_position.data)
+                self.pub_jaguar_position.publish(self.jaguar_position)
 
     def update(self):
         self.got_circle = list()
