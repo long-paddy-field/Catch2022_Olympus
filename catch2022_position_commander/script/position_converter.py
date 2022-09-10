@@ -16,7 +16,7 @@ class position_converter():
         self.pub_move_rad           = rospy.Publisher("move_rad",Float32MultiArray,queue_size = 100)             
         self.pub_servo_angle        = rospy.Publisher("servo_angle",Float32,queue_size=100)
         self.sub_move_cmd           = rospy.Subscriber("move_cmd",Float32MultiArray,self.move_cmd_callback,queue_size=100)
-        self.sub_servo_cmd          = rospy.Subscriber("servo_cmd",Bool,self.servo_cmd_callback,queue_size=100)
+        self.sub_servo_cmd          = rospy.Subscriber("servo_cmd",Int8,self.servo_cmd_callback,queue_size=100)
 
         self.pub_current_position   = rospy.Publisher("current_position",Float32MultiArray,queue_size = 100)       
         self.sub_current_angle      = rospy.Subscriber("current_angle",Float32MultiArray,self.current_angle_callback,queue_size=100)
@@ -44,20 +44,27 @@ class position_converter():
         
     def move_cmd_callback(self,msg):
         self.enable2 = True
+        dist = math.sqrt(msg.data[0]**2+msg.data[1]**2)
+
         self.move_cmd.data = msg.data
+        if  dist >= 0.89:
+            self.move_cmd.data = (0.89 * self.move_cmd.data[0] / dist,0.89 * self.move_cmd.data[1] / dist)
+        elif dist <= 0.31:
+            self.move_cmd.data = (0.31 * self.move_cmd.data[0] / dist,0.31 * self.move_cmd.data[1] / dist)
         result = self.cartesian_to_rad(self.move_cmd.data[0],self.move_cmd.data[1])
         self.move_rad.data = [result[0],result[1]]
     
     def servo_cmd_callback(self,msg):
         # self.enable3 = True
-        if msg.data == True:
-            self.servo_angle.data = -1 * (self.current_angle.data[0]+self.current_angle.data[1])
-        else :
-            self.servo_angle.data = math.pi/2 - (self.current_angle.data[0]+self.current_angle.data[1])
+        self.servo_angle.data = msg.data * (math.pi/2) - (self.current_angle.data[0]+self.current_angle.data[1])
+        # if msg.data == True:
+        #     self.servo_angle.data = -1 * (self.current_angle.data[0]+self.current_angle.data[1])
+        # else :
+        #     self.servo_angle.data = math.pi/2 - (self.current_angle.data[0]+self.current_angle.data[1])
             
         if self.servo_angle.data < 0:
             self.servo_angle.data += math.pi
-        elif self.servo_angle.data > 360:
+        elif self.servo_angle.data > math.pi*2:
             self.servo_angle.data -= math.pi
     
     def current_angle_callback(self,msg):

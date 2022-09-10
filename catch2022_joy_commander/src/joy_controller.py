@@ -1,16 +1,41 @@
 #!/usr/bin/env python3
 #役割：ジョイコン入力の読み取り、各部への伝達（ボタン）
 
+from faulthandler import is_enabled
 import rospy
 from std_msgs.msg       import Float32MultiArray
 from std_msgs.msg       import Bool
 from sensor_msgs.msg    import Joy
+from std_msgs.msg       import Int8
+from std_msgs.msg       import Empty
+
+class btn_manager():
+    def __init__(self):
+        self.past_time = rospy.Time.now()
+        self.current_time = rospy.Time.now()
+        self.btn_flag = False
+                
+    def is_enabled(self,arg:Bool):
+        if arg:
+            self.current_time=rospy.Time.now()
+            if self.current_time.secs - self.past_time.secs >= 0.5:
+                self.past_time = rospy.Time.now()
+                return True
+            else:
+                return False
+        else:
+            return False
+
 
 class joy_controller():
     def __init__(self,field_color):
         self.field = field_color
         self.pub_move_cmd           = rospy.Publisher("move_cmd",Float32MultiArray,queue_size=100)
-        self.pub_servo_cmd          = rospy.Publisher("servo_cmd",Bool,queue_size=100)
+        self.pub_servo_cmd          = rospy.Publisher("servo_cmd",Int8,queue_size=100)
+        self.pub_pmp_state          = rospy.Publisher("pmp_state",Int8,queue_size=100)
+        self.pub_stepper_cmd        = rospy.Publisher("stepper_cmd",Bool,queue_size=100)
+        self.pub_start_cmd          = rospy.Publisher("start_cmd",Empty,queue_size=100)
+        self.pub_is_handy           = rospy.Publisher("is_handy",Bool, queue_size=100)
         
         self.sub_joy                = rospy.Subscriber("joy",Joy,self.joy_callback,queue_size=100)
         self.sub_current_position   = rospy.Subscriber("current_position",Float32MultiArray,self.current_position_callback,queue_size=100)
@@ -23,10 +48,24 @@ class joy_controller():
         self.move_cmd = Float32MultiArray()
         self.buttons = list()
         
-        self.servo_cmd = Bool(data = True)
-        
+        self.servo_cmd = Int8(data = 0)
+        self.pmp_state = Int8(data = 0)
+        self.is_handy  = Bool(data = True)
+        self.stepper_cmd = Bool(data = True)
         self.enable = False
         
+        self.btn0  = btn_manager()
+        self.btn1  = btn_manager()
+        self.btn2  = btn_manager()
+        self.btn3  = btn_manager()
+        self.btn4  = btn_manager()
+        self.btn5  = btn_manager()
+        self.btn6  = btn_manager()
+        self.btn7  = btn_manager()
+        self.btn8  = btn_manager()
+        self.btn9  = btn_manager()
+        self.btn10 = btn_manager()
+        self.btn11 = btn_manager()
         self.r = rospy.Rate(10)
         self.update()
         
@@ -51,11 +90,50 @@ class joy_controller():
             if self.enable and not len(self.buttons) == 0:
                 self.move_cmd.data = [self.current_x+self.delta_x,self.current_y+self.delta_y]
                 
-                if self.buttons[10]:    #サーボの向き変更
-                    self.servo_cmd.data = not self.servo_cmd.data
+                if self.is_handy.data:
+                    if self.btn0.is_enabled(self.buttons[0]):     #青シール側の把持のみ操作
+                        if self.pmp_state.data < 2 :
+                            self.pmp_state.data += 2
+                        else:
+                            self.pmp_state.data -= 2
+                    elif self.btn2.is_enabled(self.buttons[2]):   #赤シール側の把持のみ操作
+                        if self.pmp_state.data % 2 == 0:
+                            self.pmp_state.data += 1
+                        else:
+                            self.pmp_state.data -= 1
+                    
+                    if self.btn1.is_enabled(self.buttons[1]):     #ワークはなす
+                        self.pmp_state.data = 0
+                    elif self.btn3.is_enabled(self.buttons[3]):   #ワーク掴む
+                        self.pmp_state.data = 3
+                        
+                    if self.btn4.is_enabled(self.buttons[4]):     #サーボCCW
+                        self.servo_cmd.data += 1
+                    elif self.btn5.is_enabled(self.buttons[5]):   #サーボCW
+                        self.servo_cmd.data -= 1
+                    
+                    if self.btn6.is_enabled(self.buttons[6]):     #ステッパ下降
+                        self.stepper_cmd.data = False
+                        self.pub_stepper_cmd.publish(self.stepper_cmd)
+                    elif self.btn7.is_enabled(self.buttons[7]):   #ステッパ上昇
+                        self.stepper_cmd.data = True
+                        self.pub_stepper_cmd.publish(self.stepper_cmd)
+                    
+                    self.pub_move_cmd.publish(self.move_cmd)                
+                    self.pub_servo_cmd.publish(self.servo_cmd)
+                    self.pub_pmp_state.publish(self.pmp_state)
 
-                self.pub_move_cmd.publish(self.move_cmd)                
-                self.pub_servo_cmd.publish(self.servo_cmd)
+                if self.btn9.is_enabled(self.buttons[9]):    #START
+                    self.pub_start_cmd.publish()
+                    
+                if self.btn11.is_enabled(self.buttons[11]):    #手動自動切り替え
+                    if self.is_handy.data:
+                        rospy.loginfo("hand -> auto")
+                    else :
+                        rospy.loginfo("auto -> hand")
+                    self.is_handy.data = not self.is_handy.data
+                    
+                self.pub_is_handy.publish(self.is_handy)
             self.r.sleep()
             
     
