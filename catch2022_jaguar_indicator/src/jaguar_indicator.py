@@ -88,9 +88,9 @@ class Jaguar_Indicator:
             self.cam_world_x = self.current_position.data[0]#0.3#ロボット座標からみたcamの座標
             self.cam_world_y = self.current_position.data[1]#0.3
 
-            for i in self.meter_circles[0,:]:
-                self.edge_jaguar_x =i[0]#camの左上を原点としたjaguarの座標
-                self.edge_jaguar_y =i[1]
+            for circle in self.meter_circles[0,:]:
+                self.edge_jaguar_x = circle[0]#camの左上を原点としたjaguarの座標
+                self.edge_jaguar_y = circle[1]
         
             #camの左上を原点としたcamの中心の座標
                 self.edge_cam_x = 0.96#1*960 #pixel単位からm単位に
