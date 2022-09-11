@@ -18,7 +18,7 @@ class btn_manager():
     def is_enabled(self,arg:Bool):
         if arg:
             self.current_time=rospy.Time.now()
-            if self.current_time.secs - self.past_time.secs >= 0.5:
+            if self.current_time.secs - self.past_time.secs >= 0.75:
                 self.past_time = rospy.Time.now()
                 return True
             else:
@@ -35,6 +35,7 @@ class joy_controller():
         self.pub_pmp_state          = rospy.Publisher("pmp_state",Int8,queue_size=100)
         self.pub_stepper_cmd        = rospy.Publisher("stepper_cmd",Bool,queue_size=100)
         self.pub_start_cmd          = rospy.Publisher("start_cmd",Empty,queue_size=100)
+        self.pub_back_cmd           = rospy.Publisher("back_cmd",Empty,queue_size=100)
         self.pub_is_handy           = rospy.Publisher("is_handy",Bool, queue_size=100)
         
         self.pub_grab_cmd           = rospy.Publisher("grab_cmd",Empty,queue_size=100)
@@ -130,6 +131,9 @@ class joy_controller():
                     self.pub_servo_cmd.publish(self.servo_cmd)
                     self.pub_pmp_state.publish(self.pmp_state)
 
+                if self.btn8.is_enabled(self.buttons[8]):
+                    self.pub_back_cmd.publish()
+                    
                 if self.btn9.is_enabled(self.buttons[9]):    #START
                     self.pub_start_cmd.publish()
                     

@@ -40,7 +40,6 @@ class Scara():
         self.er = self.target - self.start
         self.distance=np.linalg.norm(self.er)
         self.t0 = math.sqrt(self.distance/self.a)
-        rospy.loginfo(self.t0)
         
     def current_position_callback(self,msg):
         self.current_x = msg.data[0]
