@@ -1,18 +1,18 @@
 <template>
-  <controller-view />
+  <VisualController></VisualController>
 </template>
 
 <script lang="ts">
 import { defineComponent } from 'vue';
 
 // Components
-import ControllerView from '@/components/controllerView.vue';
+import VisualController from '@/components/visualController.vue';
 
 export default defineComponent({
-  name: 'HomeView',
+  name: 'VisualView',
 
   components: {
-    ControllerView
+    VisualController
 },
 });
 </script>

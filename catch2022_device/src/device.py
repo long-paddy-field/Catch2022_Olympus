@@ -8,6 +8,7 @@ from typing import List
 from std_msgs.msg import Float32MultiArray
 from std_msgs.msg import Float32
 from std_msgs.msg import Int8MultiArray
+from std_msgs.msg import Int16MultiArray
 from std_msgs.msg import Int32MultiArray
 from sensor_msgs.msg import JointState
 from std_msgs.msg import Int8
@@ -20,9 +21,10 @@ import struct
 import math
 import serial.tools.list_ports
 
-# port = serial.tools.list_ports.comports()[0].device
-port="/dev/pts/4"
+port = serial.tools.list_ports.comports()[0].device
+# port="/dev/pts/4"
 mode = "real"
+
 
 class device():
 
@@ -30,43 +32,29 @@ class device():
         self.setup()
         self.loop()
 
-    def move_cmd_callback(self, msg):
-        self.move_cmd = msg.data
-        self.move_cmd_theta = self.cartesian_to_theta(self.move_cmd)
+    def move_rad_callback(self, msg):
+        self.move_deg[0] = msg.data[0]*180/math.pi
+        self.move_deg[1] = msg.data[1]*180/math.pi
         # rospy.loginfo(uart_msg)
         # motor=struct.pack('<ff',*move_cmd)
         # self.uart.write(motor)
         # rospy.loginfo(motor)
 
     def servo_angle_callback(self, msg):
-        self.servo_angle = msg.data
-        self.current_theta1 = self.current_angle.data[0] - 35
-        self.current_theta2 = self.current_angle.data[1] - 138
+        self.servo_angle = msg.data*180/math.pi
 
-        if msg.data == True:
-            self.servo_angle = -(self.current_theta1 + self.current_theta2)
-        elif msg.data == False:
-            self.servo_angle = 90 - (self.current_theta1 + self.current_theta2)
-        
-        if self.servo_angle < 0:
-            self.servo_angle = self.servo_angle + 180
-        elif self.servo_angle > 360:
-            self.servo_angle = self.servo_angle - 180
 
     def stepper_state_callback(self, msg):
         self.stepper_state = msg.data.to_bytes(1, 'little')
 
     def pmp_state_callback(self, msg):
-        self.pmp_state = msg.data
+        self.pmp_state = msg.data.to_bytes(1, 'little')
 
     def emergency_callback(self, msg):
         self.emergency = msg.data
 
-    def is_blue_callback(self, msg):
-        if msg.data == True:
-            self.sign = 1
-        else:
-            self.sign = -1
+    def led_hsv_callback(self, msg):
+        self.led_hsv = msg.data
 
     def setup(self):
         global port
@@ -75,95 +63,60 @@ class device():
 
         self.pub_current_angle = rospy.Publisher('current_angle', Float32MultiArray, queue_size=1)
         self.pub_is_grabbed = rospy.Publisher('is_grabbed', Int8, queue_size=1)
-        self.pub2 = rospy.Publisher('current_position',Float32MultiArray,queue_size=1)
-        self.rviz_pub = rospy.Publisher("joint_states",JointState,queue_size=100)
-        
-        self.rviz_msg = JointState() 
-        self.rviz_msg.header = Header()
-        self.rviz_msg.name = ['stand_arm1','arm1_arm2','arm2_linear','linear_wrist']
 
         self.rate = rospy.Rate(100)
-        self.l1 = 0.6
-        self.l2 = 0.3
-        self.sign = 1
 
         # subscriberの宣言
-        self.sub_move_cmd       = rospy.Subscriber('move_cmd', Float32MultiArray, self.move_cmd_callback, queue_size=1)
-        self.sub_servo_cmd    = rospy.Subscriber('servo_cmd', Bool, self.servo_angle_callback, queue_size=1)
-        self.sub_stepper_state  = rospy.Subscriber('stepper_state', Int8, self.stepper_state_callback, queue_size=1)
-        self.sub_pmp_state     = rospy.Subscriber('pmp_state', Bool, self.pmp_state_callback, queue_size=1)
-        self.sub_emergency      = rospy.Subscriber('emergency', Int8, self.emergency_callback, queue_size=1)
-        self.sub_color_field    = rospy.Subscriber('is_blue', Bool, self.is_blue_callback, queue_size=100)
-        self.msg                = Float32MultiArray(data=[1, 2])
+        self.sub_move_rad = rospy.Subscriber('move_rad', Float32MultiArray, self.move_rad_callback, queue_size=1)
+        self.sub_servo_angle = rospy.Subscriber('servo_angle', Float32, self.servo_angle_callback, queue_size=1)
+        self.sub_stepper_state = rospy.Subscriber('stepper_state', Int8, self.stepper_state_callback, queue_size=1)
+        self.sub_pmp_state = rospy.Subscriber('pmp_state', Int8, self.pmp_state_callback, queue_size=1)
+        self.sub_emergency = rospy.Subscriber('emergency', Int8, self.emergency_callback, queue_size=1)
+        self.sub_led_hsv = rospy.Subscriber('led_hsv', Int16MultiArray, self.led_hsv_callback, queue_size=1)
+        # self.sub_color_field = rospy.Subscriber('is_blue', Bool, self.is_blue_callback, queue_size=100)
+        # self.msg = Float32MultiArray(data=[1, 2])
 
         # 変数の初期化
-        self.move_cmd = [0.3, 0.3]
-        self.move_cmd_theta = [90,78]
+        self.move_deg = [125, 138]
+        self.move_cmd_theta = [90, 78]
         self.servo_angle = 0x00
         self.stepper_state = b'\x00'
         self.pmp_state = b'\x00'
         self.emergency = b'\x00'
-        self.current_position = Float32MultiArray()
+        self.led_hsv = [0,0,0]
 
     def loop(self):
         while not rospy.is_shutdown():
-            # self.sendSerial()
-            # self.receiveSerial()
+            self.sendSerial()
+            self.receiveSerial()
             # # if mode == "sim":
             #     self.current_angle = self.move_cmd_theta
             #     rospy.loginfo(self.current_angle)
-            self.rviz_msg.header.stamp = rospy.Time.now()
-            self.rviz_simulator()
+            # self.rviz_msg.header.stamp = rospy.Time.now()
+            # self.rviz_simulator()
             self.rate.sleep()
 
     def sendSerial(self):
-        uart_msg = struct.pack("<fffc??c", *self.move_cmd, self.servo_angle, self.stepper_state, self.pmp_state, self.emergency, b'\xFF')
+        uart_msg = struct.pack("<fffcc?hccc", *self.move_deg, self.servo_angle, self.stepper_state, self.pmp_state, self.emergency, self.led_hsv[0],self.led_hsv[1].to_bytes(1,'little'),self.led_hsv[2].to_bytes(1,'little'),b'\xFF')
         rospy.loginfo(uart_msg)
         self.uart.write(uart_msg)
 
     def receiveSerial(self):
         # 受信と整形
         receiveData = self.uart.read(11)
-        msg = struct.unpack("<ffccc",receiveData)
-        if(not(msg[3]==b'\x00' and msg[4]==b'\xff')):
+        msg = struct.unpack("<ffccc", receiveData)
+        if (not (msg[3] == b'\x00' and msg[4] == b'\xff')):
             print(self.uart.readline())
-            return;
-        rospy.loginfo(msg)
-        self.current_angle = Float32MultiArray(data=[msg[0], msg[1]])
-        self.current_position.data = self.theta_to_cartesian(self.current_angle.data)
-        self.theta_to_cartesian([0.5, 0.5])
-        is_grabbed = Int8(data=msg[2])
+            return
+        # rospy.loginfo(msg)
+        self.current_angle = Float32MultiArray(data=[msg[0]*math.pi/180, msg[1]*math.pi/180])
+        is_grabbed = Int8(data=int.from_bytes(msg[2],'little'))
         self.pub_current_angle.publish(self.current_angle)
         self.pub_is_grabbed.publish(is_grabbed)
 
-        self.pub2.publish(self.current_position)
-
-    def theta_to_cartesian(self, theta: List[float]):
-        theta1 = math.pi * (theta[0] - 35) / 180
-        theta2 = math.pi * (theta[1] - 138) / 180
-        x = self.poi(self.l1 * math.cos(theta1) + self.l2*math.cos(theta1+theta2))
-        y = self.poi(self.l1 * math.sin(theta1) + self.l2*math.sin(theta1+theta2))
-        cartesian = list([x, y])
-        return cartesian
-
-    def cartesian_to_theta(self, cartesian: List[float]):
-        x = cartesian[0]
-        y = cartesian[1]
-        theta1 = self.sign * math.acos(((x**2)+(y**2)+(self.l1**2)-(self.l2**2))/(2*self.l1*math.sqrt(x**2+y**2)))
-        theta2 = math.atan((y-self.l1*math.sin(theta1))/(x-self.l1*math.cos(theta1)))-theta1
-        theta1 = theta1 * 180 / math.pi + 35
-        theta2 = theta2 * 180 / math.pi + 138
-        theta = list([theta1, theta2])
-        return theta
-
-    def poi(self, arg: float):
-        if math.fabs(arg) < 0.001:
-            return 0
-        else:
-            return arg
 
 if __name__ == "__main__":
-    
+
     # try:
     rospy.init_node('device')
     rospy.loginfo("device : node is activated")
