@@ -33,8 +33,9 @@ class device():
         self.loop()
 
     def move_rad_callback(self, msg):
-        self.move_deg[0] = msg.data[0]*180/math.pi
-        self.move_deg[1] = msg.data[1]*180/math.pi
+        self.enable = True
+        self.move_deg[0] = msg.data[0]*180/math.pi + 125
+        self.move_deg[1] = msg.data[1]*180/math.pi + 138
         # rospy.loginfo(uart_msg)
         # motor=struct.pack('<ff',*move_cmd)
         # self.uart.write(motor)
@@ -77,7 +78,8 @@ class device():
         # self.msg = Float32MultiArray(data=[1, 2])
 
         # 変数の初期化
-        self.move_deg = [125, 138]
+        self.enable = False
+        self.move_deg = [155, 12]
         self.move_cmd_theta = [90, 78]
         self.servo_angle = 0x00
         self.stepper_state = b'\x00'
@@ -98,7 +100,8 @@ class device():
 
     def sendSerial(self):
         uart_msg = struct.pack("<fffcc?hccc", *self.move_deg, self.servo_angle, self.stepper_state, self.pmp_state, self.emergency, self.led_hsv[0],self.led_hsv[1].to_bytes(1,'little'),self.led_hsv[2].to_bytes(1,'little'),b'\xFF')
-        rospy.loginfo(uart_msg)
+        # rospy.loginfo(uart_msg)
+        rospy.loginfo(self.move_deg)
         self.uart.write(uart_msg)
 
     def receiveSerial(self):
@@ -109,7 +112,7 @@ class device():
             print(self.uart.readline())
             return
         # rospy.loginfo(msg)
-        self.current_angle = Float32MultiArray(data=[msg[0]*math.pi/180, msg[1]*math.pi/180])
+        self.current_angle = Float32MultiArray(data=[(msg[0]-125)*math.pi/180, (msg[1]-138)*math.pi/180])
         is_grabbed = Int8(data=int.from_bytes(msg[2],'little'))
         self.pub_current_angle.publish(self.current_angle)
         self.pub_is_grabbed.publish(is_grabbed)

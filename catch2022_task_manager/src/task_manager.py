@@ -6,10 +6,12 @@ import rospy
 import smach
 import smach_ros
 import math
+from playsound import playsound
 from std_msgs.msg import Float32MultiArray
 from std_msgs.msg import Int8
 from std_msgs.msg import Empty
 from std_msgs.msg import Bool
+from std_msgs.msg import Int16MultiArray
 
 own_jaguar_pos_x = [0, 0, 0, 0, 0, 0, 0, 0]
 own_jaguar_pos_y = [0, 0, 0, 0, 0, 0, 0, 0]
@@ -49,8 +51,10 @@ class Init(smach.State): #諸々の初期化待機
 
         self.pub_target_location     = rospy.Publisher("target_location",Float32MultiArray,queue_size = 100)
         self.pub_servo_cmd           = rospy.Publisher("servo_cmd", Int8, queue_size=100)
+        self.pub_led_hsv             = rospy.Publisher("led_hsb",Int16MultiArray,queue_size=100)
         self.target_location = Float32MultiArray()
         self.servo_cmd = Int8(data=0)
+        self.led_hsv = Int16MultiArray(data=[0,255,255])
 
         if self.field_color == "blue":
             self.target_location.data = [0.3 * math.sqrt(3),0]
@@ -66,6 +70,9 @@ class Init(smach.State): #諸々の初期化待機
         self.is_Handy = msg.data
         if self.is_Handy:
             self.auto_flag = False
+            playsound("../catkin_ws/src/catch2022_Olympus/catch2022_task_manager/assets/Hand.wav")
+        else:
+            playsound("../catkin_ws/src/catch2022_Olympus/catch2022_task_manager/assets/Auto.wav")
     def end_cmd_callback(self,msg):
         pass
 
@@ -76,6 +83,10 @@ class Init(smach.State): #諸々の初期化待機
         self.is_started = False
         self.auto_flag = False
 
+        self.pub_led_hsv.publish(self.led_hsv)
+        
+        playsound("../catkin_ws/src/catch2022_Olympus/catch2022_task_manager/assets/START.wav")
+        
         while not rospy.is_shutdown():
             if not self.is_Handy and not self.auto_flag:
                 self.pub_target_location.publish(self.target_location)
@@ -127,6 +138,10 @@ class SeekOwn(smach.State):
         if self.past_is_handy and not self.is_handy:
             self.is_enable = True
             self.is_ended = False
+            playsound("../catkin_ws/src/catch2022_Olympus/catch2022_task_manager/assets/AUTO.wav")
+        elif not self.past_is_handy and self.is_handy:
+            playsound("../catkin_ws/src/catch2022_Olympus/catch2022_task_manager/assets/Hand.wav")
+            
     
     def execute(self, ud):
         rospy.Subscriber("start_cmd",Empty,self.start_cmd_callback,queue_size=100)

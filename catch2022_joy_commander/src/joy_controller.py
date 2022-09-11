@@ -79,8 +79,8 @@ class joy_controller():
             self.delta_y =  0.01*msg.axes[1] + 0.0005*msg.axes[5]
 
         elif self.field == "red":
-            self.delta_x =  0.01*msg.axes[0] + 0.0005*msg.axes[4]
-            self.delta_y = -0.01*msg.axes[1] - 0.0005*msg.axes[5]
+            self.delta_x =  0.1*msg.axes[0] + 0.0005*msg.axes[4]
+            self.delta_y = -0.1*msg.axes[1] - 0.0005*msg.axes[5]
             
         self.buttons = msg.buttons
 
