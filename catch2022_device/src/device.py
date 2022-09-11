@@ -21,8 +21,8 @@ import struct
 import math
 import serial.tools.list_ports
 
-# port = serial.tools.list_ports.comports()[0].device
-port="/dev/pts/4"
+port = serial.tools.list_ports.comports()[0].device
+# port="/dev/pts/4"
 mode = "real"
 
 
@@ -48,7 +48,7 @@ class device():
         self.stepper_state = msg.data.to_bytes(1, 'little')
 
     def pmp_state_callback(self, msg):
-        self.pmp_state = msg.data
+        self.pmp_state = msg.data.to_bytes(1, 'little')
 
     def emergency_callback(self, msg):
         self.emergency = msg.data
@@ -59,7 +59,7 @@ class device():
     def setup(self):
         global port
         global mode
-        # self.uart = serial.Serial(port, 115200)
+        self.uart = serial.Serial(port, 115200)
 
         self.pub_current_angle = rospy.Publisher('current_angle', Float32MultiArray, queue_size=1)
         self.pub_is_grabbed = rospy.Publisher('is_grabbed', Int8, queue_size=1)
@@ -88,7 +88,7 @@ class device():
     def loop(self):
         while not rospy.is_shutdown():
             self.sendSerial()
-            # self.receiveSerial()
+            self.receiveSerial()
             # # if mode == "sim":
             #     self.current_angle = self.move_cmd_theta
             #     rospy.loginfo(self.current_angle)
@@ -99,7 +99,7 @@ class device():
     def sendSerial(self):
         uart_msg = struct.pack("<fffcc?hccc", *self.move_deg, self.servo_angle, self.stepper_state, self.pmp_state, self.emergency, self.led_hsv[0],self.led_hsv[1].to_bytes(1,'little'),self.led_hsv[2].to_bytes(1,'little'),b'\xFF')
         rospy.loginfo(uart_msg)
-        # self.uart.write(uart_msg)
+        self.uart.write(uart_msg)
 
     def receiveSerial(self):
         # 受信と整形
@@ -108,7 +108,7 @@ class device():
         if (not (msg[3] == b'\x00' and msg[4] == b'\xff')):
             print(self.uart.readline())
             return
-        rospy.loginfo(msg)
+        # rospy.loginfo(msg)
         self.current_angle = Float32MultiArray(data=[msg[0]*math.pi/180, msg[1]*math.pi/180])
         is_grabbed = Int8(data=int.from_bytes(msg[2],'little'))
         self.pub_current_angle.publish(self.current_angle)

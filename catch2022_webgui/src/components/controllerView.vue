@@ -14,6 +14,11 @@
     <v-switch v-model="pmpStateRef0" v-on:update:model-value="() => { pmpStateTopic.publish({ data:Number(pmpStateRef1)<<1|Number(pmpStateRef0) }) }"></v-switch>
     Pmp1
     <v-switch v-model="pmpStateRef1" v-on:update:model-value="() => { pmpStateTopic.publish({ data:Number(pmpStateRef1)<<1|Number(pmpStateRef0)  }) }"></v-switch>
+
+    <v-slider v-model="ledHsvRef0" label="track-color" max=360 :step="1" thumb-label v-on:update:model-value="() => { ledHsvTopic.publish({ data: [ledHsvRef0, ledHsvRef1, ledHsvRef2] }) }"></v-slider>
+    <v-slider v-model="ledHsvRef1" label="track-color" max=255 :step="1" thumb-label v-on:update:model-value="() => { ledHsvTopic.publish({ data: [ledHsvRef0, ledHsvRef1, ledHsvRef2] }) }"></v-slider>
+    <v-slider v-model="ledHsvRef2" label="track-color" max=255 :step="1" thumb-label v-on:update:model-value="() => { ledHsvTopic.publish({ data: [ledHsvRef0, ledHsvRef1, ledHsvRef2] }) }"></v-slider>
+    
     Sensor Status
     {{isGrabbed?.data}}
   </div>
@@ -36,6 +41,10 @@ const stepperStateRef = ref<number>(0)
 const pmpStateRef0 = ref<boolean>(false)
 const pmpStateRef1 = ref<boolean>(false)
 const emergencyRef = ref<number>(0)
+const ledHsvRef0 = ref<number>(0)
+const ledHsvRef1 = ref<number>(0)
+const ledHsvRef2 = ref<number>(0)
+
 const servoAngleTopic = createTopic<floatType>({
   name: '/servo_angle',
   messageType: 'std_msgs/Float32',
@@ -66,6 +75,12 @@ const isGrabbedTopic = createTopic<{ data: number }>({
   messageType: 'std_msgs/Int8',
 });
 const isGrabbed = useSubscriber(isGrabbedTopic);
+
+
+const ledHsvTopic = createTopic<{ data: number[] }>({
+  name: '/led_hsv',
+  messageType: 'std_msgs/Int16MultiArray',
+});
 
 onMounted(
   () => {
