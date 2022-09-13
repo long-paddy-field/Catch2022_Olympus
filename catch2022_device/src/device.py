@@ -98,7 +98,7 @@ class device():
             #     rospy.loginfo(self.current_angle)
             # self.rviz_msg.header.stamp = rospy.Time.now()
             # self.rviz_simulator()
-            self.pub_is_connected.publish(self.is_connected)
+            # self.pub_is_connected.publish(self.is_connected)
             self.rate.sleep()
 
     def sendSerial(self):
