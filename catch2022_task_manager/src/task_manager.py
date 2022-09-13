@@ -79,7 +79,7 @@ class Init(smach.State): #諸々の初期化待機
     
     def is_connected_callback(self,msg):
         if not self.past_connect and msg.data:
-            playsound("../catkin_ws/src/catch2022_Olympus/catch2022_task_manager/assets/START.wav")
+            playsound("../catkin_ws/src/catch2022_Olympus/catch2022_task_manager/assets/CONNECT.wav")
         
         self.past_connect = msg.data
 

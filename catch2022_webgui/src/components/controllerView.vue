@@ -5,7 +5,7 @@
     Arm0 angle
     <v-slider v-model="moveRadRef0" label="track-color" max=250 thumb-label v-on:update:model-value="() => { moveRadTopic.publish({ data: [(moveRadRef0-125)*Math.PI/180, (moveRadRef1-138)*Math.PI/180] }) }"></v-slider>
     Arm1 angle
-    <v-slider v-model="moveRadRef1" label="track-color" max=276 thumb-label v-on:update:model-value="() => { moveRadTopic.publish({ data: [moveRadRef0*Math.PI/180, moveRadRef1*Math.PI/180] }) }"></v-slider>
+    <v-slider v-model="moveRadRef1" label="track-color" max=276 thumb-label v-on:update:model-value="() => { moveRadTopic.publish({ data: [(moveRadRef0-125)*Math.PI/180, (moveRadRef1-138)*Math.PI/180] }) }"></v-slider>
     Servo
     <v-slider v-model="servoAngleRef" label="track-color" max=360 thumb-label v-on:update:model-value="() => { servoAngleTopic.publish({ data: servoAngleRef*Math.PI/180 }) }"></v-slider>
     Stepper
@@ -28,7 +28,7 @@
 <script lang="ts" setup>
 import { defineComponent, onMounted, reactive, ref } from 'vue';
 import { createTopic, useSubscriber, connectRos } from '@/script/rosHook';
-import { RoundSlider } from "vue-round-slider/src/index2.js"
+// import { RoundSlider } from "vue-round-slider/src/index2.js"
 
 type floatType = {
   data: number
