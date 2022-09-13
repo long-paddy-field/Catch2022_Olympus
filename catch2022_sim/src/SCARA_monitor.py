@@ -14,7 +14,7 @@ class simulator():
 
         self.pub_joint_states = rospy.Publisher("joint_states", JointState, queue_size=100)
         
-        self.sub_current_angle = rospy.Publisher("current_angle", Float32MultiArray,self.current_angle_callback, queue_size=100)
+        self.sub_current_angle = rospy.Subscriber("current_angle", Float32MultiArray,self.current_angle_callback, queue_size=100)
         self.sub_servo_angle = rospy.Subscriber("servo_angle", Float32, self.servo_angle_callback, queue_size=100)
 
         self.joint_states = JointState()
@@ -28,7 +28,7 @@ class simulator():
             self.joint_states.position = [-1*math.pi/6, 2*math.pi/3, 0, 0]
             self.current_angle = Float32MultiArray(data=[-1*math.pi/6, 2*math.pi/3])
 
-        self.current_angle = Float32MultiArray()
+        # self.current_angle = Float32MultiArray()
         self.servo_angle = Float32(data=0)
 
         self.r = rospy.Rate(100)
