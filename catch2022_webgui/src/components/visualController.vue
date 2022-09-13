@@ -71,7 +71,7 @@ const isGrabbed = useSubscriber(isGrabbedTopic);
 
 onMounted(
   () => {
-    connectRos('ws://zephyrus.local:9090');
+    connectRos('ws://tomato.local:9090');
   },
 );
 
