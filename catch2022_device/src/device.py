@@ -97,8 +97,7 @@ class device():
             self.rate.sleep()
 
     def sendSerial(self):
-        uart_msg = struct.pack("<fffcc?hccc", *self.move_deg, self.servo_angle, self.stepper_state, self.pmp_state, self.emergency,
-                               self.led_hsv[0], self.led_hsv[1].to_bytes(1, 'little'), self.led_hsv[2].to_bytes(1, 'little'), b'\xFF')
+        uart_msg = struct.pack("<fffcc?hccc", *self.move_deg, self.servo_angle, self.stepper_state, self.pmp_state, self.emergency,self.led_hsv[0], self.led_hsv[1].to_bytes(1, 'little'), self.led_hsv[2].to_bytes(1, 'little'), b'\xFF')
         # uart_msg = struct.pack("<fffcc?c", *self.move_deg, self.servo_angle, self.stepper_state, self.pmp_state, self.emergency,b'\xFF')
         # rospy.loginfo(uart_msg)
         self.uart.write(uart_msg)

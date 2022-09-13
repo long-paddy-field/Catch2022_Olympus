@@ -1,2 +1,4 @@
 .vscode
 catch2022_webgui/node_modules
+!catch2022_webgui/node_modules/vue-round-slider/src/index2.d.ts
+!catch2022_webgui/node_modules/vue-round-slider/src/index2.js
