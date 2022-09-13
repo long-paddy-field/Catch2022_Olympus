@@ -62,18 +62,19 @@ class device():
         global mode
         self.uart = serial.Serial(port, 115200)
 
-        self.pub_current_angle = rospy.Publisher('current_angle', Float32MultiArray, queue_size=1)
-        self.pub_is_grabbed = rospy.Publisher('is_grabbed', Int8, queue_size=1)
+        self.pub_current_angle = rospy.Publisher('current_angle', Float32MultiArray, queue_size=100)
+        self.pub_is_grabbed = rospy.Publisher('is_grabbed', Int8, queue_size=100)
+        self.pub_is_connected = rospy.Publisher("is_connected",Bool,queue_size=100)
 
         self.rate = rospy.Rate(100)
 
         # subscriberの宣言
-        self.sub_move_rad = rospy.Subscriber('move_rad', Float32MultiArray, self.move_rad_callback, queue_size=1)
-        self.sub_servo_angle = rospy.Subscriber('servo_angle', Float32, self.servo_angle_callback, queue_size=1)
-        self.sub_stepper_state = rospy.Subscriber('stepper_state', Int8, self.stepper_state_callback, queue_size=1)
-        self.sub_pmp_state = rospy.Subscriber('pmp_state', Int8, self.pmp_state_callback, queue_size=1)
-        self.sub_emergency = rospy.Subscriber('emergency', Int8, self.emergency_callback, queue_size=1)
-        self.sub_led_hsv = rospy.Subscriber('led_hsv', Int16MultiArray, self.led_hsv_callback, queue_size=1)
+        self.sub_move_rad = rospy.Subscriber('move_rad', Float32MultiArray, self.move_rad_callback, queue_size=100)
+        self.sub_servo_angle = rospy.Subscriber('servo_angle', Float32, self.servo_angle_callback, queue_size=100)
+        self.sub_stepper_state = rospy.Subscriber('stepper_state', Int8, self.stepper_state_callback, queue_size=100)
+        self.sub_pmp_state = rospy.Subscriber('pmp_state', Int8, self.pmp_state_callback, queue_size=100)
+        self.sub_emergency = rospy.Subscriber('emergency', Int8, self.emergency_callback, queue_size=100)
+        self.sub_led_hsv = rospy.Subscriber('led_hsv', Int16MultiArray, self.led_hsv_callback, queue_size=100)
         # self.sub_color_field = rospy.Subscriber('is_blue', Bool, self.is_blue_callback, queue_size=100)
         # self.msg = Float32MultiArray(data=[1, 2])
 
@@ -86,6 +87,7 @@ class device():
         self.pmp_state = b'\x00'
         self.emergency = b'\x00'
         self.led_hsv = [0,0,0]
+        self.is_connected = Bool(data = False)
 
     def loop(self):
         while not rospy.is_shutdown():
@@ -96,16 +98,18 @@ class device():
             #     rospy.loginfo(self.current_angle)
             # self.rviz_msg.header.stamp = rospy.Time.now()
             # self.rviz_simulator()
+            self.pub_is_connected.publish(self.is_connected)
             self.rate.sleep()
 
     def sendSerial(self):
         uart_msg = struct.pack("<fffcc?hccc", *self.move_deg, self.servo_angle, self.stepper_state, self.pmp_state, self.emergency, self.led_hsv[0],self.led_hsv[1].to_bytes(1,'little'),self.led_hsv[2].to_bytes(1,'little'),b'\xFF')
         # rospy.loginfo(uart_msg)
-        rospy.loginfo(self.move_deg)
+        # rospy.loginfo(self.move_deg)
         self.uart.write(uart_msg)
 
     def receiveSerial(self):
         # 受信と整形
+        self.is_connected.data = True
         receiveData = self.uart.read(11)
         msg = struct.unpack("<ffccc", receiveData)
         if (not (msg[3] == b'\x00' and msg[4] == b'\xff')):

@@ -63,9 +63,9 @@ class position_converter():
         #     self.servo_angle.data = math.pi/2 - (self.current_angle.data[0]+self.current_angle.data[1])
             
         if self.servo_angle.data < 0:
-            self.servo_angle.data += math.pi
+            self.servo_angle.data += 2*math.pi
         elif self.servo_angle.data > math.pi*2:
-            self.servo_angle.data -= math.pi
+            self.servo_angle.data -= 2*math.pi
     
     def current_angle_callback(self,msg):
         self.current_angle.data = msg.data

@@ -13,10 +13,12 @@ from std_msgs.msg import Empty
 from std_msgs.msg import Bool
 from std_msgs.msg import Int16MultiArray
 
-own_jaguar_pos_x = [0, 0, 0, 0, 0, 0, 0, 0]
-own_jaguar_pos_y = [0, 0, 0, 0, 0, 0, 0, 0]
-com_jaguar_pos_x = [0, 0, 0, 0, 0, 0, 0, 0, 0]
-com_jaguar_pos_y = [0, 0, 0, 0, 0, 0, 0, 0, 0]
+
+
+own_arm_pos_x = [0, 0, 0, 0, 0, 0, 0, 0]
+own_arm_pos_y = [0, 0, 0, 0, 0, 0, 0, 0]
+com_arm_pos_x = [0, 0, 0, 0, 0, 0, 0, 0, 0]
+com_arm_pos_y = [0, 0, 0, 0, 0, 0, 0, 0, 0]
 box_pos_x = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 box_pos_y = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
@@ -24,20 +26,20 @@ def cal_dist(x0:float,y0:float,x1:float,y1:float):
     return math.sqrt((x1-x0)**2+(y1-y0)**2)
 
 def jaguar_position_callback(msg):
-    global own_jaguar_pos_x
-    global own_jaguar_pos_y
+    global own_arm_pos_x
+    global own_arm_pos_y
 
     tag = 0
     min_dist = 100
 
     if not len(msg.data) == 0 or (msg.data[0] == 0 and msg.data[1] == 0):
         for i in range(10):
-            dist = cal_dist(msg.data[0],msg.data[1],own_jaguar_pos_x[i],own_jaguar_pos_y[i])
+            dist = cal_dist(msg.data[0],msg.data[1],own_arm_pos_x[i],own_arm_pos_y[i])
             if dist < min_dist:
                 min_dist = dist
                 tag = i
-        own_jaguar_pos_x[tag] = msg.data[0]
-        own_jaguar_pos_y[tag] = msg.data[1]
+        own_arm_pos_x[tag] = msg.data[0]
+        own_arm_pos_y[tag] = msg.data[1]
 
 class Init(smach.State): #諸々の初期化待機
     def __init__(self):
@@ -55,6 +57,7 @@ class Init(smach.State): #諸々の初期化待機
         self.target_location = Float32MultiArray()
         self.servo_cmd = Int8(data=0)
         self.led_hsv = Int16MultiArray(data=[0,255,255])
+        self.past_connect = False
 
         if self.field_color == "blue":
             self.target_location.data = [0.3 * math.sqrt(3),0]
@@ -67,29 +70,38 @@ class Init(smach.State): #諸々の初期化待機
         self.is_started = not self.is_started
 
     def is_handy_callback(self,msg):
+        self.past_is_handy = self.is_Handy
         self.is_Handy = msg.data
         if self.is_Handy:
             self.auto_flag = False
-            playsound("../catkin_ws/src/catch2022_Olympus/catch2022_task_manager/assets/Hand.wav")
-        else:
-            playsound("../catkin_ws/src/catch2022_Olympus/catch2022_task_manager/assets/Auto.wav")
     def end_cmd_callback(self,msg):
         pass
+    
+    def is_connected_callback(self,msg):
+        if not self.past_connect and msg.data:
+            playsound("../catkin_ws/src/catch2022_Olympus/catch2022_task_manager/assets/START.wav")
+        
+        self.past_connect = msg.data
 
     def execute(self, ud):
         rospy.Subscriber("start_cmd",Empty,self.start_cmd_callback,queue_size = 100)
         rospy.Subscriber("is_handy",Bool,self.is_handy_callback,queue_size=100)
         rospy.Subscriber("end_cmd",Empty,self.end_cmd_callback,queue_size=100)
+        rospy.Subscriber("is_connected",Bool,self.is_connected_callback,queue_size=100)
         self.is_started = False
         self.auto_flag = False
-
-        self.pub_led_hsv.publish(self.led_hsv)
         
+        self.led_hsv.data = [240,255,255]
+        self.pub_led_hsv.publish(self.led_hsv)
+
         playsound("../catkin_ws/src/catch2022_Olympus/catch2022_task_manager/assets/START.wav")
         
         while not rospy.is_shutdown():
             if not self.is_Handy and not self.auto_flag:
                 self.pub_target_location.publish(self.target_location)
+                self.led_hsv.data = [0,255,255]
+                self.pub_led_hsv.publish(self.led_hsv)
+
                 self.auto_flag = True
             if not self.is_Handy:
                 self.pub_servo_cmd.publish(self.servo_cmd)
@@ -100,8 +112,8 @@ class Init(smach.State): #諸々の初期化待機
             
 class SeekOwn(smach.State):
     def __init__(self):
-        global own_jaguar_pos_x
-        global own_jaguar_pos_y
+        global own_arm_pos_x
+        global own_arm_pos_y
         
         smach.State.__init__(self,outcomes=['done','completed'])
         
@@ -116,8 +128,8 @@ class SeekOwn(smach.State):
         self.pmp_state = Int8(data = 0)
         
         self.task_counter = 0
-        self.target_x = own_jaguar_pos_x
-        self.target_y = own_jaguar_pos_y
+        self.target_x = own_arm_pos_x
+        self.target_y = own_arm_pos_y
         
         self.start_cmd = False
         self.is_handy = True
@@ -216,8 +228,8 @@ class GrabOwn(smach.State):
 
 class SeekCom(smach.State):
     def __init__(self):
-        global com_jaguar_pos_x
-        global com_jaguar_pos_y
+        global com_arm_pos_x
+        global com_arm_pos_y
 
         smach.State.__init__(self, outcomes=['done','completed'])
 
@@ -232,8 +244,8 @@ class SeekCom(smach.State):
         self.pmp_state = Int8(data=0)
 
         self.task_counter = 0
-        self.target_x = com_jaguar_pos_x
-        self.target_y = com_jaguar_pos_y
+        self.target_x = com_arm_pos_x
+        self.target_y = com_arm_pos_y
 
         self.start_cmd = False
         self.is_handy = True
@@ -390,8 +402,10 @@ class SeekBox(smach.State):
             self.pub_stepper_state.publish(self.stepper_state)
             self.pub_pmp_state.publish(self.pmp_state)
             if not self.is_handy:
-                if self.task_counter % 4 == 1 or self.task_counter % 4 == 2:
+                if self.task_counter % 4 == 1:
                     self.servo_cmd = 0
+                elif  self.task_counter % 4 == 2:
+                    self.servo_cmd = 2
                 else:
                     self.servo_cmd = 1
                 self.pub_servo_cmd.publish(self.servo_cmd)
@@ -470,17 +484,17 @@ if __name__ == '__main__':
     field_color = rospy.get_param("~field_color")
 
     if field_color == "blue":
-        own_jaguar_pos_x = [0.435,0.435,0.235,0.035,0.035,-0.165,-0.365,-0.365]
-        own_jaguar_pos_y = [0.448,0.448,0.448,0.448,0.448,0.448,0.448,0.448]
-        com_jaguar_pos_x = [0.595,0.455,0.315,0.175,0.035,-0.105,-0.245,-0.385,-0.525]
-        com_jaguar_pos_y = [0.745, 0.745, 0.745, 0.745, 0.745, 0.745, 0.745, 0.745]
+        own_arm_pos_x = [0.435,0.435,0.235,0.035,0.035,-0.165,-0.365,-0.365]
+        own_arm_pos_y = [0.448,0.448,0.448,0.448,0.448,0.448,0.448,0.448]
+        com_arm_pos_x = [0.595,0.455,0.315,0.175,0.035,-0.105,-0.245,-0.385,-0.525]
+        com_arm_pos_y = [0.745, 0.745, 0.745, 0.745, 0.745, 0.745, 0.745, 0.745]
         box_pos_x = [ 0.685, 0.685, 0.685, 0.685, 0.685, 0.685, 0.685, 0.685, 0.685, 0.685, 0.685, 0.685]
         box_pos_y = [-0.537,-0.437,-0.337,-0.437,-0.336,-0.236,-0.136,-0.236,-0.135,-0.035, 0.065,-0.035]
     elif field_color == "red":
-        own_jaguar_pos_x = [0.435,0.435,0.235,0.035,0.035,-0.165,-0.365,-0.365]
-        own_jaguar_pos_y = [-0.448,-0.448,-0.448,-0.448,-0.448,-0.448,-0.448,-0.448]
-        com_jaguar_pos_x = [0.595,0.455,0.315,0.175,0.035,-0.105,-0.245,-0.385,-0.525]
-        com_jaguar_pos_y = [-0.745, -0.745, -0.745, -0.745, -0.745, -0.745, -0.745, -0.745]
+        own_arm_pos_x = [0.435,0.435,0.235,0.035,0.035,-0.165,-0.365,-0.365]
+        own_arm_pos_y = [-0.448,-0.448,-0.448,-0.448,-0.448,-0.448,-0.448,-0.448]
+        com_arm_pos_x = [0.595,0.455,0.315,0.175,0.035,-0.105,-0.245,-0.385,-0.525]
+        com_arm_pos_y = [-0.745, -0.745, -0.745, -0.745, -0.745, -0.745, -0.745, -0.745]
         box_pos_x = [0.685, 0.685, 0.685, 0.685, 0.685, 0.685, 0.685, 0.685, 0.685, 0.685, 0.685, 0.685]
         box_pos_y = [0.537, 0.437, 0.337, 0.437, 0.336, 0.236, 0.136, 0.236, 0.135, 0.035,-0.065, 0.035]
     else:
@@ -517,8 +531,8 @@ if __name__ == '__main__':
 # import smach_ros
 # import math
 
-# jaguar_pos_x = [0,0,0,0,0,0,0,0,0,0]
-# jaguar_pos_y = [0,0,0,0,0,0,0,0,0,0]
+# arm_pos_x = [0,0,0,0,0,0,0,0,0,0]
+# arm_pos_y = [0,0,0,0,0,0,0,0,0,0]
 # box_pos_x    = [0,0,0,0,0,0,0,0,0,0]
 # box_pos_y    = [0,0,0,0,0,0,0,0,0,0]
 
@@ -526,21 +540,21 @@ if __name__ == '__main__':
 #     return math.sqrt((x1-x0)**2+(y1-y0)**2)
 
 # def jaguar_position_callback(msg):
-#     global jaguar_pos_x
-#     global jaguar_pos_y
+#     global arm_pos_x
+#     global arm_pos_y
 
 #     tag = 0
 #     min_dist = 100
 
 #     if not len(msg.data) == 0 or (msg.data[0] == 0 and msg.data[1] == 0):
 #         for i in range(10):
-#             dist = cal_dist(msg.data[0],msg.data[1],jaguar_pos_x[i],jaguar_pos_y[i])
+#             dist = cal_dist(msg.data[0],msg.data[1],arm_pos_x[i],arm_pos_y[i])
 #             if dist < min_dist:
 #                 min_dist = dist
 #                 tag = i
 
-#         jaguar_pos_x[tag] = msg.data[0]
-#         jaguar_pos_y[tag] = msg.data[1]
+#         arm_pos_x[tag] = msg.data[0]
+#         arm_pos_y[tag] = msg.data[1]
 
 # class Task1_Init(smach.State): #諸々の初期化待機
 #     def __init__(self):
@@ -590,8 +604,8 @@ if __name__ == '__main__':
 # class Task2_SeekWork(smach.State): #じゃがりこ探しに行く
 #     def __init__(self):
 #         smach.State.__init__(self,outcomes=['done','completed'])
-#         global jaguar_pos_x
-#         global jaguar_pos_y
+#         global arm_pos_x
+#         global arm_pos_y
 #         global box_pos_x
 #         global box_pos_y
 
@@ -622,7 +636,7 @@ if __name__ == '__main__':
 #         if self.task_counter < 10 :
 #             if self.is_Handy == False:
 #                 self.target_msg = Float32MultiArray()
-#                 self.target_msg.data = [jaguar_pos_x[self.task_counter],jaguar_pos_y[self.task_counter]]
+#                 self.target_msg.data = [arm_pos_x[self.task_counter],arm_pos_y[self.task_counter]]
 #                 self.target_pub.publish(self.target_msg)
 
 #             if self.task_counter == 1 or self.task_counter == 2:
@@ -789,8 +803,8 @@ if __name__ == '__main__':
 #             self.stepper_state_pub.publish(self.stepper_state)
 
 #     def execute(self, ud):
-#         global jaguar_pos_x
-#         global jaguar_pos_y
+#         global arm_pos_x
+#         global arm_pos_y
 #         global box_pos_x
 #         global box_pos_y
 #         global is_Handy
@@ -837,13 +851,13 @@ if __name__ == '__main__':
 #     field_color = rospy.get_param("~field_color")
 
 #     if field_color == "blue":
-#         jaguar_pos_x = [0.435,0.595,0.455,0.435,0.235,0.035,0.035,-0.165,-0.365,-0.365]
-#         jaguar_pos_y = [0.448,0.745,0.745,0.448,0.448,0.448,0.448,0.448,0.448,0.448]
+#         arm_pos_x = [0.435,0.595,0.455,0.435,0.235,0.035,0.035,-0.165,-0.365,-0.365]
+#         arm_pos_y = [0.448,0.745,0.745,0.448,0.448,0.448,0.448,0.448,0.448,0.448]
 #         box_pos_x    = [0,0,0,0,0,0,0,0,0,0]
 #         box_pos_y    = [0,0,0,0,0,0,0,0,0,0]
 #     elif field_color == "red":
-#         jaguar_pos_x = [0.435,0.595,0.455,0.435,0.235,0.035,0.035,-0.165,-0.365,-0.365]
-#         jaguar_pos_y = [-0.448,-0.745,-0.745,-0.448,-0.448,-0.448,-0.448,-0.448,-0.448,-0.448]
+#         arm_pos_x = [0.435,0.595,0.455,0.435,0.235,0.035,0.035,-0.165,-0.365,-0.365]
+#         arm_pos_y = [-0.448,-0.745,-0.745,-0.448,-0.448,-0.448,-0.448,-0.448,-0.448,-0.448]
 #         box_pos_x    = [0,0,0,0,0,0,0,0,0,0]
 #         box_pos_y    = [0,0,0,0,0,0,0,0,0,0]
 #     else:

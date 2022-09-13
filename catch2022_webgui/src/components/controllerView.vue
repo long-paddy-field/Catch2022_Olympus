@@ -84,7 +84,7 @@ const ledHsvTopic = createTopic<{ data: number[] }>({
 
 onMounted(
   () => {
-    connectRos('ws://zephyrus.local:9090');
+    connectRos('ws://tomato.local:9090');
   },
 );
 

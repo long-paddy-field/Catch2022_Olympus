@@ -24,7 +24,7 @@
 <script lang="ts" setup>
 import { defineComponent, onMounted, reactive, ref } from 'vue';
 import { createTopic, useSubscriber, connectRos } from '@/script/rosHook';
-import { RoundSlider } from "vue-round-slider/src/index2.js"
+// import { RoundSlider } from "vue-round-slider/src/index2.js"
 
 type floatType = {
   data: number
