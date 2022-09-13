@@ -24,16 +24,19 @@
     <!-- <include file="$(find catch2022_jaguar_indicator)/launch/jaguar_indicator.launch" /> -->
     <!-- <include file = "$(find catch2022_webgui)/launch/webgui.launch"/> -->
 
+    <param name="robot_description" textfile="$(find catch2022_sim)/urdf/SCARA_sample.urdf" />
+    <node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rvizconfig) -f base_link" />
+    <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
     <group if= "$(eval mode == 'real')">
         <node name="device" pkg="catch2022_device" type="device.py" output="screen" />
+        <node name="SCARA_monitor" pkg="catch2022_sim" type="SCARA_monitor.py" output="screen">
+            <param name="field_color" value="$(arg field_color)" />
+        </node>
     </group>
 
     <group if="$(eval mode == 'sim')">
-        <param name="robot_description" textfile="$(find catch2022_sim)/urdf/SCARA_sample.urdf" />
         <node name="SCARA_rviz" pkg="catch2022_sim" type = "SCARA_rviz.py" output="screen">
             <param name="field_color" value="$(arg field_color)" />        
         </node>
-        <node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rvizconfig) -f base_link" />
-        <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
     </group>
 </launch>
