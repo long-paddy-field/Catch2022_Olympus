@@ -62,7 +62,7 @@ class device():
 
         self.pub_current_angle = rospy.Publisher('current_angle', Float32MultiArray, queue_size=100)
         self.pub_is_grabbed = rospy.Publisher('is_grabbed', Int8, queue_size=100)
-        self.pub_is_connected = rospy.Publisher("is_connected",Bool,queue_size=100)
+        self.pub_is_connected = rospy.Publisher("is_connected", Bool, queue_size=100)
 
         self.rate = rospy.Rate(100)
 
@@ -76,14 +76,14 @@ class device():
 
         # 変数の初期化
         self.move_deg = [155, 22]
+        self.past_deg = [0, 0]
         self.move_cmd_theta = [90, 78]
         self.servo_angle = 0x00
         self.stepper_state = b'\x00'
         self.pmp_state = b'\x00'
         self.emergency = b'\x00'
         self.led_hsv = [0, 0, 0]
-        self.is_connected = Bool(data = False)
-
+        self.is_connected = Bool(data=False)
 
     def loop(self):
         while not rospy.is_shutdown():
@@ -97,7 +97,8 @@ class device():
             self.rate.sleep()
 
     def sendSerial(self):
-        uart_msg = struct.pack("<fffcc?hccc", *self.move_deg, self.servo_angle, self.stepper_state, self.pmp_state, self.emergency,self.led_hsv[0], self.led_hsv[1].to_bytes(1, 'little'), self.led_hsv[2].to_bytes(1, 'little'), b'\xFF')
+        uart_msg = struct.pack("<fffcc?hccc", *self.move_deg, self.servo_angle, self.stepper_state, self.pmp_state, self.emergency,
+                               self.led_hsv[0], self.led_hsv[1].to_bytes(1, 'little'), self.led_hsv[2].to_bytes(1, 'little'), b'\xFF')
         # uart_msg = struct.pack("<fffcc?c", *self.move_deg, self.servo_angle, self.stepper_state, self.pmp_state, self.emergency,b'\xFF')
         # rospy.loginfo(uart_msg)
         self.uart.write(uart_msg)
@@ -111,13 +112,11 @@ class device():
             print(self.uart.readline())
             return
         rospy.loginfo(msg)
-        self.current_angle = Float32MultiArray(
-            data=[msg[0]*math.pi/180, msg[1]*math.pi/180])
+        self.current_angle = Float32MultiArray(data=[msg[0]*math.pi/180, msg[1]*math.pi/180])
         is_grabbed = Int8(data=int.from_bytes(msg[2], 'little'))
         self.pub_current_angle.publish(self.current_angle)
         self.pub_is_grabbed.publish(is_grabbed)
         self.pub_is_connected.publish(self.is_connected)
-
 
 
 if __name__ == "__main__":
