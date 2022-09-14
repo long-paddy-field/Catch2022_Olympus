@@ -22,12 +22,26 @@ com_arm_pos_y = [0, 0, 0, 0, 0, 0, 0, 0, 0]
 box_pos_x = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 box_pos_y = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
+own_jaguar_pos_x = [0.535, 0.435, 0.435, 0.335, 0.235, 0.235, 0.135, 0.035, 0.035, -0.065, -0.165, -0.165, -0.265, -0.365, -0.365, -0.465]
+own_jaguar_pos_y = [-0.448, -0.348, -0.548, -0.448, -0.348, -0.548, -0.448, -0.348, -0.548, -0.448, -0.348, -0.548, -0.448, -0.348, -0.548, -0.448]
+com_jaguar_pos_x = [0.595, 0.455, 0.315, 0.175, 0.035, -0.105, -0.245, -0.385, -0.525]
+com_jaguar_pos_y = [-0.845, -0.845, -0.845, -0.845, -0.845, -0.845, -0.845, -0.845, -0.845]
+box_jaguar_pos_x = [0.585, 0.685, 0.785, 0.585, 0.685, 0.785, 0.585, 0.685, 0.785, 0.585, 0.685, 0.785,0.585, 0.685, 0.785, 0.585, 0.685, 0.785]
+box_jaguar_pos_y = [0.035, 0.035, 0.035, 0.135, 0.135, 0.135, 0.236, 0.236, 0.236, 0.336, 0.336, 0.336, 0.437, 0.437, 0.437, 0.537, 0.537, 0.537]
+
+
 def cal_dist(x0:float,y0:float,x1:float,y1:float):
     return math.sqrt((x1-x0)**2+(y1-y0)**2)
 
 def jaguar_position_callback(msg):
     global own_arm_pos_x
     global own_arm_pos_y
+    global own_jaguar_pos_x
+    global own_jaguar_pos_y
+    global com_jaguar_pos_x
+    global com_jaguar_pos_y
+    global box_jaguar_pos_x
+    global box_jaguar_pos_y
 
     tag = 0
     min_dist = 100
