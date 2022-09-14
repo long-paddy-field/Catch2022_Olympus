@@ -117,7 +117,6 @@ class device():
         is_grabbed = Int8(data=int.from_bytes(msg[2], 'little'))
         self.pub_current_angle.publish(self.current_angle)
         self.pub_is_grabbed.publish(is_grabbed)
-        self.pub_is_connected.publish(self.is_connected)
 
 
 if __name__ == "__main__":

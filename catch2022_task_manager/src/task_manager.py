@@ -176,7 +176,6 @@ class SeekOwn(smach.State):#自陣エリアのワークへ移動
         
         while not rospy.is_shutdown():
             p_stepper_state(1)
-            p_pmp_state(3)
             rospy.loginfo("%d,%d,%d",is_handy,is_enable,is_ended)
             if not is_handy:
                 if self.task_counter % 3 == 1:
@@ -254,14 +253,12 @@ class SeekCom(smach.State):
         is_enable = True
 
         while not rospy.is_shutdown():
-            p_stepper_state(3)
+            p_stepper_state(0)
             if not is_handy:
                 if self.task_counter % 2 == 1:
                     p_servo_cmd(2)
-                    p_pmp_state(1)
                 else:
                     p_servo_cmd(0)
-                    p_pmp_state(2)
                 if is_enable and not is_ended:
                     p_target_location(com_arm_pos_x[self.task_counter],com_arm_pos_y[self.task_counter])
                     is_enable = False
@@ -285,7 +282,7 @@ class GrabCom(smach.State):
     def is_grabbed_callback(self,msg):
         if msg.data == 3 and self.task_counter % 2 == 1:
             self.is_completed = True
-        elif msg.data == 1 and self.task_counter % 2 == 0:
+        elif (msg.data == 1 or msg.data == 2) and self.task_counter % 2 == 0:
             self.is_completed = True
         else:
             self.is_completed = False
@@ -369,7 +366,6 @@ class RelWork(smach.State):
         
         self.back_cmd  = False
         
-        self.r1 = rospy.Rate(0.5)
         self.r2 = rospy.Rate(10)
 
     def back_cmd_callback(self,msg):
@@ -384,7 +380,7 @@ class RelWork(smach.State):
 
         p_stepper_state(1)
         p_pmp_state(3)
-        self.r1.sleep()
+        rospy.sleep(4)
         p_pmp_state(0)
 
         while not rospy.is_shutdown():

@@ -56,7 +56,7 @@ class position_converter():
     
     def servo_cmd_callback(self,msg):
         # self.enable3 = True
-        self.servo_angle.data = (msg.data+1) * (math.pi/2) - (self.current_angle.data[0]+self.current_angle.data[1])
+        self.servo_angle.data = (msg.data+3) * (math.pi/2) - (self.current_angle.data[0]+self.current_angle.data[1])
         # if msg.data == True:
         #     self.servo_angle.data = -1 * (self.current_angle.data[0]+self.current_angle.data[1])
         # else :

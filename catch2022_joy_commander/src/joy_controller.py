@@ -43,6 +43,7 @@ class joy_controller():
         
         self.sub_joy                = rospy.Subscriber("joy",Joy,self.joy_callback,queue_size=100)
         self.sub_current_position   = rospy.Subscriber("current_position",Float32MultiArray,self.current_position_callback,queue_size=100)
+        self.sub_servo_cmd          = rospy.Subscriber("servo_cmd",Int8,self.servo_cmd_callback,queue_size=100)
         
         self.delta_x = 0
         self.delta_y = 0
@@ -79,8 +80,8 @@ class joy_controller():
             self.delta_y =  0.01*msg.axes[1] + 0.0005*msg.axes[5]
 
         elif self.field == "red":
-            self.delta_x =  0.01*msg.axes[0] + 0.005*msg.axes[4]
-            self.delta_y = -0.01*msg.axes[1] - 0.005*msg.axes[5]
+            self.delta_x =  0.1*msg.axes[0] + 0.05*msg.axes[4]
+            self.delta_y = -0.1*msg.axes[1] - 0.05*msg.axes[5]
         # rospy.loginfo("%f,%f",self.delta_x,self.delta_y)
         self.buttons = msg.buttons
 
@@ -89,6 +90,10 @@ class joy_controller():
         self.current_x = msg.data[0]
         self.current_y = msg.data[1]
         self.enable = True
+    
+    def servo_cmd_callback(self,msg):
+        if not self.is_handy:
+            self.servo_cmd.data = msg.data
     
     def update(self):
         while not rospy.is_shutdown():
