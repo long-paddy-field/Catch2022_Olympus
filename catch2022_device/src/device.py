@@ -55,6 +55,21 @@ class device():
     def led_hsv_callback(self, msg):
         self.led_hsv = msg.data
 
+    def connect_device_callback(self, msg):
+        if not self.connect_flag:
+            self.uart.write(b'\xFF\xFF\xFF\xFF')
+            receive = self.uart.read(4)
+            if receive == b'\xFF\xFF\xFF\xFF':
+                self.connect_flag = True
+                self.pub_is_connected.publish()
+
+    def device_start_callback(self, msg):
+        if not self.start_flag:
+            self.uart.write(b'\xFF\xFF\xFF\xFF')
+            receive = self.uart.read(4)
+            if receive == b'\xFF\xFF\xFF\xFF':
+                self.start_flag = True
+
     def setup(self):
         global port
         global mode
@@ -73,6 +88,8 @@ class device():
         self.sub_pmp_state = rospy.Subscriber('pmp_state', Int8, self.pmp_state_callback, queue_size=100)
         self.sub_emergency = rospy.Subscriber('emergency', Int8, self.emergency_callback, queue_size=100)
         self.sub_led_hsv = rospy.Subscriber('led_hsv', Int16MultiArray, self.led_hsv_callback, queue_size=100)
+        self.sub_connect_device = rospy.Subscriber('connect_device', Empty, self.connect_device_callback, queue_size=100)
+        self.sub_device_start = rospy.Subscriber('device_start', Empty, self.device_start_callback, queue_size=100)
 
         # 変数の初期化
         self.move_deg = [155, 22]
@@ -84,6 +101,15 @@ class device():
         self.emergency = b'\x00'
         self.led_hsv = [0, 0, 0]
         self.connect_flag = False
+        self.start_flag = False
+
+        while not self.connect_flag:
+            pass
+        rospy.loginfo("Connection Established")
+            
+        while not self.start_flag:
+            pass
+        rospy.loginfo("Start")
 
     def loop(self):
         while not rospy.is_shutdown():
@@ -97,7 +123,8 @@ class device():
             self.rate.sleep()
 
     def sendSerial(self):
-        uart_msg = struct.pack("<fffcc?hccc", *self.move_deg, self.servo_angle, self.stepper_state, self.pmp_state, self.emergency,self.led_hsv[0], self.led_hsv[1].to_bytes(1, 'little'), self.led_hsv[2].to_bytes(1, 'little'), b'\xFF')
+        uart_msg = struct.pack("<fffcc?hccc", *self.move_deg, self.servo_angle, self.stepper_state, self.pmp_state, self.emergency,
+                               self.led_hsv[0], self.led_hsv[1].to_bytes(1, 'little'), self.led_hsv[2].to_bytes(1, 'little'), b'\xFF')
         # uart_msg = struct.pack("<fffcc?c", *self.move_deg, self.servo_angle, self.stepper_state, self.pmp_state, self.emergency,b'\xFF')
         # rospy.loginfo(uart_msg)
         self.uart.write(uart_msg)
@@ -105,14 +132,12 @@ class device():
     def receiveSerial(self):
         # 受信と整形
         receiveData = self.uart.read(11)
-        if not self.connect_flag:
-            self.pub_is_connected.publish()
-            self.connect_flag = True
+
         msg = struct.unpack("<ffccc", receiveData)
         if (not (msg[3] == b'\x00' and msg[4] == b'\xff')):
             print(self.uart.readline())
             return
-        # rospy.loginfo(msg)
+        rospy.loginfo(msg)
         self.current_angle = Float32MultiArray(data=[(msg[0]-125)*math.pi/180, (msg[1]-138)*math.pi/180])
         is_grabbed = Int8(data=int.from_bytes(msg[2], 'little'))
         self.pub_current_angle.publish(self.current_angle)
