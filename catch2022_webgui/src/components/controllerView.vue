@@ -2,6 +2,8 @@
   <div class="hello no_scroll">
     <!-- {{ servoAngle?.data }} -->
     <!-- <v-slider v-model="servoRef" label="track-color" v-on:update:model-value="() => { servoAngleTopic.publish({ data: servoRef }) }"></v-slider> -->
+    <v-btn @click="()=>{connectDeviceTopic.publish({})}">Connect</v-btn><br>
+    <v-btn @click="()=>{deviceStartTopic.publish({})}">Start</v-btn><br>
     Arm0 angle
     <v-slider v-model="moveRadRef0" label="track-color" max=250 thumb-label v-on:update:model-value="() => { moveRadTopic.publish({ data: [(moveRadRef0-125)*Math.PI/180, (moveRadRef1-138)*Math.PI/180] }) }"></v-slider>
     Arm1 angle
@@ -82,6 +84,16 @@ const ledHsvTopic = createTopic<{ data: number[] }>({
   messageType: 'std_msgs/Int16MultiArray',
 });
 
+const connectDeviceTopic = createTopic<Record<string, never>>({
+  name: '/connect_device',
+  messageType: 'std_msgs/Empty',
+});
+
+const deviceStartTopic = createTopic<Record<string, never>>({
+  name: '/device_start',
+  messageType: 'std_msgs/Empty',
+});
+
 onMounted(
   () => {
     connectRos('ws://zephyrus.local:9090');
@@ -126,6 +138,6 @@ a {
   left: 0;
   right: 0;
   overflow: hidden;
-  margin: 10%;
+  margin: 5% 10%;
 }
 </style>
