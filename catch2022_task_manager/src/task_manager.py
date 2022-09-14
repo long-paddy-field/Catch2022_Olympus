@@ -114,17 +114,49 @@ def jaguar_position_callback(msg):
     global box_jaguar_pos_x
     global box_jaguar_pos_y
 
-    tag = 0
-    min_dist = 100
+    own_tag = 0
+    com_tag = 0
+    min_own_dist = 100
+    min_com_dist = 100
 
     if not len(msg.data) == 0 or (msg.data[0] == 0 and msg.data[1] == 0):
-        for i in range(10):
-            dist = cal_dist(msg.data[0],msg.data[1],own_arm_pos_x[i],own_arm_pos_y[i])
-            if dist < min_dist:
-                min_dist = dist
-                tag = i
-        own_arm_pos_x[tag] = msg.data[0]
-        own_arm_pos_y[tag] = msg.data[1]
+        for i in range(16):
+            dist = cal_dist(msg.data[0],msg.data[1],own_jaguar_pos_x[i],own_jaguar_pos_y[i])
+            if dist < 350 and dist < min_own_dist:
+                min_own_dist = dist
+                own_tag = i
+
+        for i in range(9):
+            dist = cal_dist(msg.data[0],msg.data[1],com_jaguar_pos_x[i],com_jaguar_pos_y[i])
+            if dist < 350 and dist < min_com_dist:
+                min_com_dist = dist
+                com_tag = i
+
+        if min_own_dist > min_com_dist: 
+            com_jaguar_pos_x[com_tag] = msg.data[0]
+            com_jaguar_pos_y[com_tag] = msg.data[1]
+            com_arm_pos_x[com_tag] = msg.data[0]
+            com_arm_pos_y[com_tag] = msg.data[1] - (msg.data[1]*0.1)/math.fabs(msg.data[1])
+        else:
+            own_jaguar_pos_x[com_tag] = msg.data[0]
+            own_jaguar_pos_y[com_tag] = msg.data[1]
+            num = [1,0,0,1,2,2,4,3,3,4,5,5,7,6,6,7]
+            if own_tag %3 == 1:
+                own_arm_pos_x[num[own_tag]] = (own_jaguar_pos_x[own_tag]+own_jaguar_pos_x[own_tag+1])/2
+                own_arm_pos_y[num[own_tag]] = (own_jaguar_pos_y[own_tag]+own_jaguar_pos_y[own_tag+1])/2
+            elif own_tag %3 == 2:
+                own_arm_pos_x[num[own_tag]] = (own_jaguar_pos_x[own_tag]+own_jaguar_pos_x[own_tag-1])/2
+                own_arm_pos_y[num[own_tag]] = (own_jaguar_pos_y[own_tag]+own_jaguar_pos_y[own_tag-1])/2
+            elif own_tag %6 == 0:
+                own_arm_pos_x[num[own_tag]] = (own_jaguar_pos_x[own_tag]+own_jaguar_pos_x[own_tag+3])/2
+                own_arm_pos_y[num[own_tag]] = (own_jaguar_pos_y[own_tag]+own_jaguar_pos_y[own_tag+3])/2
+            elif own_tag %6 == 3:
+                own_arm_pos_x[num[own_tag]] = (own_jaguar_pos_x[own_tag]+own_jaguar_pos_x[own_tag-3])/2
+                own_arm_pos_y[num[own_tag]] = (own_jaguar_pos_y[own_tag]+own_jaguar_pos_y[own_tag-3])/2
+
+
+            
+
 
 # ここからステートマシン
 class Connect(smach.State):

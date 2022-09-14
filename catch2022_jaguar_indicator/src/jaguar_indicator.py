@@ -11,9 +11,9 @@ class Jaguar_Indicator:
     def __init__(self,cam_ch,loop_rate):
         rospy.loginfo("jaguar_indicator : called constructor")
         rospy.init_node("jaguar_indicator")
-        self.pub_jaguar_position = rospy.Publisher("jaguar_position",Float32MultiArray,queue_size= 1)
-        rospy.Subscriber("current_position",Float32MultiArray,self.current_position_callback,queue_size=1)
-        rospy.Subscriber("current_angle",Float32MultiArray,self.current_position_callback,queue_size=1)
+        self.pub_jaguar_position = rospy.Publisher("jaguar_position",Float32MultiArray,queue_size= 100)
+        # rospy.Subscriber("current_position",Float32MultiArray,self.current_position_callback,queue_size=100)
+        rospy.Subscriber("current_angle",Float32MultiArray,self.current_angle_callback,queue_size=100)
         self.r = rospy.Rate(loop_rate)
         self.l1 = 0.6
         self.l2 = 0.3
@@ -76,19 +76,31 @@ class Jaguar_Indicator:
     #     # self.meter_radius = self.pixel_radius 
     #     # meter = list([self.meter_x,self.meter_y,self.meter_radius])
     #     return self.meter_circles
+    # def current_position_callback(self,msg):
+    #     self.cam_world_x = msg.data[0]#0.3#ロボット座標からみたcamの座標
+    #     self.cam_world_y = msg.data[1]#0.3
+
+
+    def current_angle_callback(self,msg):
+        self.current_angle = msg.data
+        self.cam_pos_x = self.poi(self.l1 * math.cos(msg.data[0]) + 0.43*math.cos(msg.data[0]+msg.data[1]))
+        self.cam_pos_y = self.poi(self.l1 * math.sin(msg.data[0]) + 0.43*math.sin(msg.data[0]+msg.data[1]))
     
+    def poi(self, arg: float):
+        if math.fabs(arg) < 0.001:
+            return 0
+        else:
+            return arg
     
 
-    def current_position_callback(self):
+    def cal_jaguar_pos(self):
         if isinstance(self.my_circles,np.ndarray) :
             # rospy.loginfo("Circle is not found")
             # no_array = np.array([0,0,0])
             # return no_array
             self.meter_circles = 0.01 * (self.my_circles)
         # self.meter_circles =[1.2,0.7,0.5]
-            self.cam_world_x = self.current_position.data[0]#0.3#ロボット座標からみたcamの座標
-            self.cam_world_y = self.current_position.data[1]#0.3
-
+            
             for circle in self.meter_circles[0,:]:
                 self.edge_jaguar_x = circle[0]#camの左上を原点としたjaguarの座標
                 self.edge_jaguar_y = circle[1]
@@ -102,8 +114,8 @@ class Jaguar_Indicator:
                 #ジャガのロボット座標への座標変換
                 # self.jaguar_x = self.cam_world_x+(self.cam_jaguar_x*(math.sin(math.radians(60+50)))+self.cam_jaguar_y*(math.cos(math.radians(60+50))))
                 # self.jaguar_y = self.cam_world_y+(self.cam_jaguar_y*(math.sin(math.radians(60+50)))-self.cam_jaguar_x*(math.cos(math.radians(60+50))))
-                self.jaguar_x = self.cam_world_x+(self.cam_jaguar_x*(math.sin(self.current_angle.data[0]+self.current_angle[1]))+self.cam_jaguar_y*(math.cos(self.current_angle.data[0]+self.current_angle[1])))
-                self.jaguar_y = self.cam_world_y+(self.cam_jaguar_y*(math.sin(self.current_angle.data[0]+self.current_angle[1]))-self.cam_jaguar_x*(math.cos(self.current_angle.data[0]+self.current_angle[1])))
+                self.jaguar_x = self.cam_pos_x+(self.cam_jaguar_x*(math.sin(self.current_angle.data[0]+self.current_angle[1]))+self.cam_jaguar_y*(math.cos(self.current_angle.data[0]+self.current_angle[1])))
+                self.jaguar_y = self.cam_pos_y+(self.cam_jaguar_y*(math.sin(self.current_angle.data[0]+self.current_angle[1]))-self.cam_jaguar_x*(math.cos(self.current_angle.data[0]+self.current_angle[1])))
                 self.jaguar_position.data = [self.jaguar_x,self.jaguar_y]
             # for i in self.meter_list[0,:]:
             #     self.jaguar_position_x = (i[0]*(math.sin(self.current_angle.data[0]+self.current_angle[1]))+i[1]*(math.cos(self.current_angle.data[0]+self.current_angle[1])))+self.current_position.data[0]
@@ -116,7 +128,7 @@ class Jaguar_Indicator:
         self.got_circle = list()
         while not rospy.is_shutdown():
             self.got_circle = self.getcircle()
-            self.current_position_callback()
+            self.cal_jaguar_pos()
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
             rospy.loginfo(self.got_circle)
