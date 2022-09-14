@@ -48,7 +48,7 @@
      <link name="wrist_link">
         <visual>
             <geometry>
-                <box size="0.1 0.3 0.04" />
+                <box size="0.3 0.1 0.04" />
             </geometry>
             <origin xyz="0 0 0" rpy="0 0 0" />
             <material name = "white">
@@ -118,12 +118,12 @@
     <joint name="wrist_right" type="fixed">
         <parent link="wrist_link"/>
         <child link="righthand_link"/>
-        <origin xyz="0 0.1 -0.025" rpy="0 0 0"/>
+        <origin xyz="0.1 0 -0.025" rpy="0 0 0"/>
     </joint>
     <joint name="wrist_left" type="fixed">
         <parent link="wrist_link" />
         <child link="lefthand_link" />
-        <origin xyz="0 -0.1 -0.025" rpy="0 0 0" />
+        <origin xyz="-0.1 -0 -0.025" rpy="0 0 0" />
     </joint>
  
     <transmission name="arm1_trans">

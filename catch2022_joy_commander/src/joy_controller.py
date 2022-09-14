@@ -37,12 +37,14 @@ class joy_controller():
         self.pub_start_cmd          = rospy.Publisher("start_cmd",Empty,queue_size=100)
         self.pub_back_cmd           = rospy.Publisher("back_cmd",Empty,queue_size=100)
         self.pub_is_handy           = rospy.Publisher("is_handy",Bool, queue_size=100)
+        self.pub_servo_enable       = rospy.Publisher("servo_enable",Empty,queue_size=100)
         
         self.pub_grab_cmd           = rospy.Publisher("grab_cmd",Empty,queue_size=100)
         self.pub_release_cmd        = rospy.Publisher("release_cmd",Empty,queue_size=100)
         
         self.sub_joy                = rospy.Subscriber("joy",Joy,self.joy_callback,queue_size=100)
         self.sub_current_position   = rospy.Subscriber("current_position",Float32MultiArray,self.current_position_callback,queue_size=100)
+        self.sub_servo_cmd          = rospy.Subscriber("servo_cmd",Int8,self.servo_cmd_callback,queue_size=100)
         
         self.delta_x = 0
         self.delta_y = 0
@@ -56,6 +58,7 @@ class joy_controller():
         self.pmp_state = Int8(data = 0)
         self.is_handy  = Bool(data = True)
         self.stepper_cmd = Bool(data = True)
+
         self.enable = False
         
         self.btn0  = btn_manager()
@@ -79,9 +82,9 @@ class joy_controller():
             self.delta_y =  0.01*msg.axes[1] + 0.0005*msg.axes[5]
 
         elif self.field == "red":
-            self.delta_x =  0.1*msg.axes[0] + 0.0005*msg.axes[4]
-            self.delta_y = -0.1*msg.axes[1] - 0.0005*msg.axes[5]
-        rospy.loginfo("%f,%f",self.delta_x,self.delta_y)
+            self.delta_x =  0.1*msg.axes[0] + 0.05*msg.axes[4]
+            self.delta_y = -0.1*msg.axes[1] - 0.05*msg.axes[5]
+        # rospy.loginfo("%f,%f",self.delta_x,self.delta_y)
         self.buttons = msg.buttons
 
     
@@ -89,6 +92,10 @@ class joy_controller():
         self.current_x = msg.data[0]
         self.current_y = msg.data[1]
         self.enable = True
+    
+    def servo_cmd_callback(self,msg):
+        if not self.is_handy:
+            self.servo_cmd.data = msg.data
     
     def update(self):
         while not rospy.is_shutdown():
@@ -121,15 +128,19 @@ class joy_controller():
                     elif self.btn5.is_enabled(self.buttons[5]):   #サーボCW
                         self.servo_cmd.data -= 1
                     
-                    if self.btn6.is_enabled(self.buttons[6]):     #ステッパ下降
-                        self.stepper_cmd.data = False
-                        self.pub_stepper_cmd.publish(self.stepper_cmd)
-                    elif self.btn7.is_enabled(self.buttons[7]):   #ステッパ上昇
-                        self.stepper_cmd.data = True
-                        self.pub_stepper_cmd.publish(self.stepper_cmd)
+                    # if self.btn6.is_enabled(self.buttons[6]):     #ステッパ下降
+                    #     self.stepper_cmd.data = False
+                    #     self.pub_stepper_cmd.publish(self.stepper_cmd)
+                    # elif self.btn7.is_enabled(self.buttons[7]):   #ステッパ上昇
+                    #     self.stepper_cmd.data = True
+                    #     self.pub_stepper_cmd.publish(self.stepper_cmd)
                     self.pub_move_cmd.publish(self.move_cmd)                
                     self.pub_servo_cmd.publish(self.servo_cmd)
+                    # rospy.loginfo("joyjoy")
                     # self.pub_pmp_state.publish(self.pmp_state)
+
+                if self.btn6.is_enabled(self.buttons[6]):  # サーボ許可
+                    self.pub_servo_enable.publish()
 
                 if self.btn8.is_enabled(self.buttons[8]):
                     self.pub_back_cmd.publish()
@@ -145,12 +156,14 @@ class joy_controller():
                     self.is_handy.data = not self.is_handy.data
                     
                 self.pub_is_handy.publish(self.is_handy)
+                # rospy.loginfo(self.is_handy)
             self.r.sleep()
             
     
 if __name__ == '__main__':
     rospy.init_node('joy_controller')
     field_color = rospy.get_param("~field_color")
+    # field_color = "red"
     arg = joy_controller(field_color)
     rospy.loginfo("joy_controller : process_end")
 

@@ -32,7 +32,7 @@ class simulator():
         self.move_rad            = Float32MultiArray()
         self.servo_angle = Float32(data=0)
 
-        self.r = rospy.Rate(100)
+        self.r = rospy.Rate(10)
         self.update()
         
         
