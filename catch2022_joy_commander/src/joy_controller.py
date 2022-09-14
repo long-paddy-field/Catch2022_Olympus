@@ -36,7 +36,8 @@ class joy_controller():
         self.pub_stepper_cmd        = rospy.Publisher("stepper_cmd",Bool,queue_size=100)
         self.pub_start_cmd          = rospy.Publisher("start_cmd",Empty,queue_size=100)
         self.pub_back_cmd           = rospy.Publisher("back_cmd",Empty,queue_size=100)
-        self.pub_is_handy           = rospy.Publisher("is_handy",Bool, queue_size=1)
+        self.pub_is_handy           = rospy.Publisher("is_handy",Bool, queue_size=100)
+        self.pub_servo_enable       = rospy.Publisher("servo_enable",Empty,queue_size=100)
         
         self.pub_grab_cmd           = rospy.Publisher("grab_cmd",Empty,queue_size=100)
         self.pub_release_cmd        = rospy.Publisher("release_cmd",Empty,queue_size=100)
@@ -57,6 +58,7 @@ class joy_controller():
         self.pmp_state = Int8(data = 0)
         self.is_handy  = Bool(data = True)
         self.stepper_cmd = Bool(data = True)
+
         self.enable = False
         
         self.btn0  = btn_manager()
@@ -126,16 +128,19 @@ class joy_controller():
                     elif self.btn5.is_enabled(self.buttons[5]):   #サーボCW
                         self.servo_cmd.data -= 1
                     
-                    if self.btn6.is_enabled(self.buttons[6]):     #ステッパ下降
-                        self.stepper_cmd.data = False
-                        self.pub_stepper_cmd.publish(self.stepper_cmd)
-                    elif self.btn7.is_enabled(self.buttons[7]):   #ステッパ上昇
-                        self.stepper_cmd.data = True
-                        self.pub_stepper_cmd.publish(self.stepper_cmd)
+                    # if self.btn6.is_enabled(self.buttons[6]):     #ステッパ下降
+                    #     self.stepper_cmd.data = False
+                    #     self.pub_stepper_cmd.publish(self.stepper_cmd)
+                    # elif self.btn7.is_enabled(self.buttons[7]):   #ステッパ上昇
+                    #     self.stepper_cmd.data = True
+                    #     self.pub_stepper_cmd.publish(self.stepper_cmd)
                     self.pub_move_cmd.publish(self.move_cmd)                
                     self.pub_servo_cmd.publish(self.servo_cmd)
                     # rospy.loginfo("joyjoy")
                     # self.pub_pmp_state.publish(self.pmp_state)
+
+                if self.btn6.is_enabled(self.buttons[6]):  # サーボ許可
+                    self.pub_servo_enable.publish()
 
                 if self.btn8.is_enabled(self.buttons[8]):
                     self.pub_back_cmd.publish()
