@@ -25,6 +25,8 @@ past_is_handy = False
 is_enable = True
 is_ended = True
 start_cmd = False
+is_connected = False
+
 
 own_jaguar_pos_x = [0.535, 0.435, 0.435, 0.335, 0.235, 0.235, 0.135, 0.035, 0.035, -0.065, -0.165, -0.165, -0.265, -0.365, -0.365, -0.465]
 own_jaguar_pos_y = [-0.448, -0.348, -0.548, -0.448, -0.348, -0.548, -0.448, -0.348, -0.548, -0.448, -0.348, -0.548, -0.448, -0.348, -0.548, -0.448]
@@ -95,8 +97,9 @@ def end_cmd_callback(msg):  # 移動の終了コマンド
 
 
 def is_connected_callback(msg):  # マイコンとの接続確認
+    global is_connected
     playsound("../catkin_ws/src/catch2022_Olympus/catch2022_task_manager/assets/CONNECT.wav")
-
+    is_connected = True
 
 def cal_dist(x0:float,y0:float,x1:float,y1:float):
     return math.sqrt((x1-x0)**2+(y1-y0)**2)
@@ -124,9 +127,32 @@ def jaguar_position_callback(msg):
         own_arm_pos_y[tag] = msg.data[1]
 
 # ここからステートマシン
+class Connect(smach.State):
+    def __init__(self):
+        smach.State.__init__(self, outcomes=['done'])
+        self.pub_connect_device = rospy.Publisher('connect_device',Empty,queue_size=100)
+        self.r = rospy.Rate(10)
+
+    def execute(self, ud):
+        global is_connected
+        global start_cmd
+
+        self.pub_connect_device.publish()
+        while not rospy.is_shutdown():
+            if is_connected:
+                return 'done'
+            
+            if start_cmd:
+                start_cmd = False
+                return 'done'
+            self.r.sleep()
+
+
 class Init(smach.State): #諸々の初期化待機
     def __init__(self):
         smach.State.__init__(self, outcomes=['done'])
+        
+        self.pub_device_start = rospy.Publisher('device_start',Empty,queue_size=100)
 
         self.field_color = rospy.get_param("~field_color")
 
@@ -148,6 +174,8 @@ class Init(smach.State): #諸々の初期化待機
         start_cmd = False
 
         playsound("../catkin_ws/src/catch2022_Olympus/catch2022_task_manager/assets/START.wav")
+        
+        self.pub_device_start.publish()
         
         while not rospy.is_shutdown():
             if not is_handy:
@@ -456,6 +484,7 @@ if __name__ == '__main__':
 
     sm_top = smach.StateMachine(outcomes=['end'])
     with sm_top:
+        smach.StateMachine.add('Connect',Connect(),transitions={'done':'Init'})
         smach.StateMachine.add('Init',Init(),transitions={'done':'SeekOwn'})
         smach.StateMachine.add('SeekOwn',SeekOwn(),transitions={'done':'GrabOwn','completed':'Terminal'})
         smach.StateMachine.add('GrabOwn',GrabOwn(),transitions={'done':'SeekBox'})
