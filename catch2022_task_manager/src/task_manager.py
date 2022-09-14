@@ -19,17 +19,84 @@ com_arm_pos_x = [0, 0, 0, 0, 0, 0, 0, 0, 0]
 com_arm_pos_y = [0, 0, 0, 0, 0, 0, 0, 0, 0]
 box_pos_x = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 box_pos_y = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+
 is_handy = True
 past_is_handy = False
 is_enable = True
 is_ended = True
 start_cmd = False
+
 own_jaguar_pos_x = [0.535, 0.435, 0.435, 0.335, 0.235, 0.235, 0.135, 0.035, 0.035, -0.065, -0.165, -0.165, -0.265, -0.365, -0.365, -0.465]
 own_jaguar_pos_y = [-0.448, -0.348, -0.548, -0.448, -0.348, -0.548, -0.448, -0.348, -0.548, -0.448, -0.348, -0.548, -0.448, -0.348, -0.548, -0.448]
 com_jaguar_pos_x = [0.595, 0.455, 0.315, 0.175, 0.035, -0.105, -0.245, -0.385, -0.525]
 com_jaguar_pos_y = [-0.845, -0.845, -0.845, -0.845, -0.845, -0.845, -0.845, -0.845, -0.845]
 box_jaguar_pos_x = [0.585, 0.685, 0.785, 0.585, 0.685, 0.785, 0.585, 0.685, 0.785, 0.585, 0.685, 0.785,0.585, 0.685, 0.785, 0.585, 0.685, 0.785]
 box_jaguar_pos_y = [0.035, 0.035, 0.035, 0.135, 0.135, 0.135, 0.236, 0.236, 0.236, 0.336, 0.336, 0.336, 0.437, 0.437, 0.437, 0.537, 0.537, 0.537]
+
+pub_target_location = rospy.Publisher("target_location",Float32MultiArray,queue_size=100)
+pub_servo_cmd       = rospy.Publisher("servo_cmd",Int8,queue_size=100)
+pub_pmp_state       = rospy.Publisher("pmp_state",Int8,queue_size=100)
+pub_stepper_state   = rospy.Publisher("stepper_state",Int8,queue_size=100)
+pub_led_hsv         = rospy.Publisher("led_hsv",Int16MultiArray,queue_size=100)
+
+def p_target_location(x:float,y:float):
+    global pub_target_location
+    
+    f_msg=Float32MultiArray(data=[x,y])
+    pub_target_location.publish(f_msg)
+    
+def p_servo_cmd (x:Int8):
+    global pub_servo_cmd
+    
+    i_msg=Int8(data=x)
+    pub_servo_cmd.publish(i_msg)
+
+def p_pmp_state(x: Int8):
+    global pub_pmp_state
+
+    i_msg = Int8(data=x)
+    pub_pmp_state.publish(i_msg)
+
+def p_stepper_state(x: Int8):
+    global pub_stepper_state
+
+    i_msg = Int8(data=x)
+    pub_stepper_state.publish(i_msg)
+
+def p_led_hsv(x:int):
+    global pub_led_hsv
+
+    i_msg = Int16MultiArray(data=[x,255,255])
+    pub_led_hsv.publish(i_msg)
+
+
+def is_handy_callback(msg):  # 手動or自動
+    global is_handy
+    global is_enable
+    global is_ended
+    past_is_handy = is_handy
+    is_handy = msg.data
+    if past_is_handy and not is_handy:
+        is_enable = True
+        is_ended = False
+        playsound("../catkin_ws/src/catch2022_Olympus/catch2022_task_manager/assets/AUTO.wav")
+    elif not past_is_handy and is_handy:
+        playsound("../catkin_ws/src/catch2022_Olympus/catch2022_task_manager/assets/Hand.wav")
+
+
+def start_cmd_callback(msg):  # Stateの遷移コマンド
+    global start_cmd
+    start_cmd = True
+
+
+def end_cmd_callback(msg):  # 移動の終了コマンド
+    global is_ended
+    is_ended = True
+
+
+def is_connected_callback(msg):  # マイコンとの接続確認
+    playsound("../catkin_ws/src/catch2022_Olympus/catch2022_task_manager/assets/CONNECT.wav")
+
 
 def cal_dist(x0:float,y0:float,x1:float,y1:float):
     return math.sqrt((x1-x0)**2+(y1-y0)**2)
