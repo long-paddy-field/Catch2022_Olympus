@@ -136,14 +136,18 @@ class Connect(smach.State):
     def execute(self, ud):
         global is_connected
         global start_cmd
+        self.pub_device_start = rospy.Publisher('device_start', Empty, queue_size=100)
 
         self.pub_connect_device.publish()
         while not rospy.is_shutdown():
-            if is_connected:
+            if is_connected and start_cmd:
+                self.pub_device_start.publish()
+                start_cmd = False
                 return 'done'
             
             if start_cmd:
                 start_cmd = False
+                self.pub_device_start.publish()
                 return 'done'
             self.r.sleep()
 
@@ -152,7 +156,6 @@ class Init(smach.State): #諸々の初期化待機
     def __init__(self):
         smach.State.__init__(self, outcomes=['done'])
         
-        self.pub_device_start = rospy.Publisher('device_start',Empty,queue_size=100)
 
         self.field_color = rospy.get_param("~field_color")
 
@@ -175,7 +178,6 @@ class Init(smach.State): #諸々の初期化待機
 
         playsound("../catkin_ws/src/catch2022_Olympus/catch2022_task_manager/assets/START.wav")
         
-        self.pub_device_start.publish()
         
         while not rospy.is_shutdown():
             if not is_handy:
