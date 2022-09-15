@@ -64,6 +64,7 @@ class device():
             if receive == b'\xFF\xFF\xFF\xFF':
                 self.connect_flag = True
                 self.pub_is_connected.publish()
+                rospy.loginfo("is_connected published")
 
     def device_start_callback(self, msg):
         self.uart.reset_input_buffer()
@@ -141,7 +142,7 @@ class device():
         if (not (msg[3] == b'\x00' and msg[4] == b'\xff')):
             print(self.uart.readline())
             return
-        rospy.loginfo(msg)
+        # rospy.loginfo(msg)
         self.current_angle = Float32MultiArray(data=[(msg[0]-125)*math.pi/180, (msg[1]-138)*math.pi/180])
         is_grabbed = Int8(data=int.from_bytes(msg[2], 'little'))
         self.pub_current_angle.publish(self.current_angle)

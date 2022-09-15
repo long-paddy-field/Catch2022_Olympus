@@ -169,10 +169,11 @@ class Connect(smach.State):
         global is_connected
         global start_cmd
         self.pub_device_start = rospy.Publisher('device_start', Empty, queue_size=100)
-
+        rospy.sleep(2)
         self.pub_connect_device.publish()
         rospy.loginfo("connect_device published")
         while not rospy.is_shutdown():
+            rospy.loginfo("%d,%d",is_connected,start_cmd)
             if is_connected and start_cmd:
                 self.pub_device_start.publish()
                 start_cmd = False
@@ -309,7 +310,7 @@ class SeekCom(smach.State):
     def __init__(self):
         smach.State.__init__(self, outcomes=['done', 'completed'])
 
-        self.task_counter = 0
+        self.task_counter = 1
         self.r = rospy.Rate(10)
 
 

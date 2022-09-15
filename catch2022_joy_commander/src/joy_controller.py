@@ -99,9 +99,9 @@ class joy_controller():
     
     def update(self):
         while not rospy.is_shutdown():
+            # rospy.loginfo(self.buttons)
             if self.enable and not len(self.buttons) == 0:
                 self.move_cmd.data = [self.current_x+self.delta_x,self.current_y+self.delta_y]
-                                
                 if self.is_handy.data:
                     # if self.btn0.is_enabled(self.buttons[0]):     #青シール側の把持のみ操作
                     #     if self.pmp_state.data < 2 :
@@ -144,10 +144,7 @@ class joy_controller():
 
                 if self.btn8.is_enabled(self.buttons[8]):
                     self.pub_back_cmd.publish()
-                    
-                if self.btn9.is_enabled(self.buttons[9]):    #START
-                    self.pub_start_cmd.publish()
-                    
+                                        
                 if self.btn11.is_enabled(self.buttons[11]):    #手動自動切り替え
                     if self.is_handy.data:
                         rospy.loginfo("hand -> auto")
@@ -157,6 +154,10 @@ class joy_controller():
                     
                 self.pub_is_handy.publish(self.is_handy)
                 # rospy.loginfo(self.is_handy)
+            if not len(self.buttons) == 0:
+                if self.btn9.is_enabled(self.buttons[9]):  # START
+                    self.pub_start_cmd.publish()
+
             self.r.sleep()
             
     
@@ -164,6 +165,7 @@ if __name__ == '__main__':
     rospy.init_node('joy_controller')
     field_color = rospy.get_param("~field_color")
     # field_color = "red"
+    rospy.loginfo("node is activated")
     arg = joy_controller(field_color)
     rospy.loginfo("joy_controller : process_end")
 
