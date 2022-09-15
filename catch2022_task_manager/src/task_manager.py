@@ -303,6 +303,7 @@ class GrabOwn(smach.State):
                 start_cmd = False
                 return 'done'
             if self.is_completed == True:
+                playsound("../catkin_ws/src/catch2022_Olympus/catch2022_task_manager/assets/get_work.wav")
                 start_cmd = False
                 return 'done'
 
