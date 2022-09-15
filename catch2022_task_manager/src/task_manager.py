@@ -262,6 +262,7 @@ class SeekOwn(smach.State):#自陣エリアのワークへ移動
                 else:
                     p_servo_cmd(0)
                 if is_enable and not is_ended:
+                    rospy.loginfo("%f,%f",own_arm_pos_x[self.task_counter],own_arm_pos_y[self.task_counter])
                     p_target_location(own_arm_pos_x[self.task_counter],own_arm_pos_y[self.task_counter])
                     is_enable = False
                     is_ended  = False

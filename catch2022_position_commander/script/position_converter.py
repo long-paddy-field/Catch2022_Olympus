@@ -19,7 +19,7 @@ class position_converter():
         self.sub_move_cmd           = rospy.Subscriber("move_cmd",Float32MultiArray,self.move_cmd_callback,queue_size=100)
         self.sub_servo_cmd          = rospy.Subscriber("servo_cmd",Int8,self.servo_cmd_callback,queue_size=100)
         self.sub_servo_enable       = rospy.Subscriber("servo_enable",Empty,self.servo_enable_callback,queue_size=100)
-
+        
         self.pub_current_position   = rospy.Publisher("current_position",Float32MultiArray,queue_size = 100)       
         self.sub_current_angle      = rospy.Subscriber("current_angle",Float32MultiArray,self.current_angle_callback,queue_size=100)
         
@@ -81,6 +81,7 @@ class position_converter():
         self.enable1 = True
 
     def servo_enable_callback(self,msg):
+        rospy.loginfo("gyaaaaaaaaaaaaaaaaaaaaa")
         self.servo_enable=True
         
     
@@ -115,6 +116,7 @@ class position_converter():
             if self.enable1:
                 self.pub_current_position.publish(self.current_position)
             if self.enable2:
+                rospy.loginfo("syorisyori")
                 self.pub_move_rad.publish(self.move_rad)
                 if self.servo_enable:
                     self.pub_servo_angle.publish(self.servo_angle)

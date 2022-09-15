@@ -44,7 +44,7 @@ class Jaguar_Indicator:
         _,dst_bi = cv2.threshold(dst_grey,50,200,THRESH_BINARY)
         cv2.imshow("edge",dst_bi)
         #my_circles = cv2.HoughCircles(dst_bi,cv2.HOUGH_GRADIENT,1,80, param1=100,param2=30,minRadius=0.084/self.pic_to_m,maxRadius=0.092/self.pic_to_m)
-        self.my_circles = cv2.HoughCircles(dst_bi,cv2.HOUGH_GRADIENT,1,80, param1=100,param2=30,minRadius=75,maxRadius=200)
+        self.my_circles = cv2.HoughCircles(dst_bi,cv2.HOUGH_GRADIENT,1,80, param1=100,param2=30,minRadius=75,maxRadius=120)
                   
         if not isinstance(self.my_circles,np.ndarray):
             rospy.loginfo("Circle is not found")
@@ -124,7 +124,7 @@ class Jaguar_Indicator:
             #     self.jaguar_position_x = (i[0]*(math.sin(self.current_angle.data[0]+self.current_angle[1]))+i[1]*(math.cos(self.current_angle.data[0]+self.current_angle[1])))+self.current_position.data[0]
             #     self.jaguar_position_y = (i[0]*(math.cos(self.current_angle.data[0]+self.current_angle[1]))+i[1]*(math.sin(self.current_angle.data[0]+self.current_angle[1])))+self.current_position.data[1]
             #     self.jaguar_position = np.array([self.jaguar_position_x,self.jaguar_position_y])
-                rospy.loginfo(self.jaguar_position.data)
+                # rospy.loginfo(self.jaguar_position.data)
                 self.pub_jaguar_position.publish(self.jaguar_position)
 
     def update(self):
@@ -135,7 +135,7 @@ class Jaguar_Indicator:
                 self.cal_jaguar_pos()
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
-            rospy.loginfo(self.got_circle)
+            # rospy.loginfo(self.got_circle)
             self.r.sleep()
 
 if __name__=='__main__':
