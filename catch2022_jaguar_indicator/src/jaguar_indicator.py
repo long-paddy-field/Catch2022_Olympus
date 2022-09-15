@@ -42,7 +42,7 @@ class Jaguar_Indicator:
         result = cv2.bitwise_and(frame,frame,mask=hsv_mask)
         dst_grey = cv2.cvtColor(result,cv2.COLOR_BGR2GRAY)
         _,dst_bi = cv2.threshold(dst_grey,50,200,THRESH_BINARY)
-        # cv2.imshow("edge",dst_bi)
+        cv2.imshow("edge",dst_bi)
         #my_circles = cv2.HoughCircles(dst_bi,cv2.HOUGH_GRADIENT,1,80, param1=100,param2=30,minRadius=0.084/self.pic_to_m,maxRadius=0.092/self.pic_to_m)
         self.my_circles = cv2.HoughCircles(dst_bi,cv2.HOUGH_GRADIENT,1,80, param1=100,param2=30,minRadius=75,maxRadius=200)
                   
@@ -101,7 +101,7 @@ class Jaguar_Indicator:
             # rospy.loginfo("Circle is not found")
             # no_array = np.array([0,0,0])
             # return no_array
-            self.meter_circles = 0.01 * (self.my_circles)
+            self.meter_circles = 0.001 * (self.my_circles)
         # self.meter_circles =[1.2,0.7,0.5]
             
             for circle in self.meter_circles[0,:]:
