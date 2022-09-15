@@ -55,11 +55,11 @@ class Jaguar_Indicator:
         
         # cv2.circle(frame,(200,200),10,(255,0,0),2) #検出された円を一個ずつ参照できる
         # for i in self.my_circles[0,:]: #:で行を参照してる
-            # draw the outer circle
-            # cv2.circle(frame,(i[0],i[1]),i[2],(0,255,0),2)
-            # rospy.loginfo("nya")
-            # draw the center of the circle
-            # cv2.circle(frame,(i[0],i[1]),2,(0,0,255),3)
+        #     # draw the outer circle
+        #     cv2.circle(frame,(i[0],i[1]),i[2],(0,255,0),2)
+        #     rospy.loginfo("nya")
+        #     # draw the center of the circle
+        #     cv2.circle(frame,(i[0],i[1]),2,(0,0,255),3)
 
         cv2.imshow("img", frame)
 
@@ -118,7 +118,7 @@ class Jaguar_Indicator:
                 # self.jaguar_x = self.cam_world_x+(self.cam_jaguar_x*(math.sin(math.radians(60+50)))+self.cam_jaguar_y*(math.cos(math.radians(60+50))))
                 # self.jaguar_y = self.cam_world_y+(self.cam_jaguar_y*(math.sin(math.radians(60+50)))-self.cam_jaguar_x*(math.cos(math.radians(60+50))))
                 self.jaguar_x = self.cam_pos_x+(self.cam_jaguar_x*(math.sin(self.current_angle.data[0]+self.current_angle.data[1]))+self.cam_jaguar_y*(math.cos(self.current_angle.data[0]+self.current_angle.data[1])))
-                self.jaguar_y = self.cam_pos_y+(self.cam_jaguar_y*(math.sin(self.current_angle.data[0]+self.current_angle.data[1]))-self.cam_jaguar_x*(math.cos(self.current_angle.data[0]+self.current_angle[1])))
+                self.jaguar_y = self.cam_pos_y+(self.cam_jaguar_y*(math.sin(self.current_angle.data[0]+self.current_angle.data[1]))-self.cam_jaguar_x*(math.cos(self.current_angle.data[0]+self.current_angle.data[1])))
                 self.jaguar_position.data = [self.jaguar_x,self.jaguar_y]
             # for i in self.meter_list[0,:]:
             #     self.jaguar_position_x = (i[0]*(math.sin(self.current_angle.data[0]+self.current_angle[1]))+i[1]*(math.cos(self.current_angle.data[0]+self.current_angle[1])))+self.current_position.data[0]

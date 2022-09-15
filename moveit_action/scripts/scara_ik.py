@@ -15,9 +15,9 @@ class Scara():
         self.work_flag = False
         self.l1     = 0.6
         self.l2     = 0.3
-        self.a      = 0.051
-        self.h      = 1
-        self.r      = rospy.Rate(1)
+        self.a      = 0.05
+        self.h      = 4
+        self.r      = rospy.Rate(4)
         self.target = np.array([[0],[0]])
         self.current = np.array([[0],[0.52]])
         self.current_theta = np.array([[pi/3],[pi/1.5]])

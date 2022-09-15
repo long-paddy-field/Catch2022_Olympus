@@ -95,7 +95,13 @@ class position_converter():
         elif self.field == "blue":
             rad1 = (-1*math.acos(((x**2)+(y**2)+(self.l1**2)-(self.l2**2))/(2*self.l1*math.sqrt(x**2+y**2))))+math.atan2(y,x)
             
-        rad2 = math.atan2(y-self.l1*math.sin(rad1),x-self.l1*math.cos(rad1))-rad1        
+        rad2 = math.atan2(y-self.l1*math.sin(rad1),x-self.l1*math.cos(rad1))-rad1
+        
+        if rad2 >= math.pi:
+            rad2 -= math.pi*2
+        elif rad2 <= -1*math.pi:
+            rad2 += math.pi*2
+        
         return rad1,rad2
     
     def poi(self, arg: float):
