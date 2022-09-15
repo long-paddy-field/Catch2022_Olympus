@@ -77,6 +77,8 @@ class device():
     def setup(self):
         global port
         global mode
+        self.connect_flag = False
+        self.start_flag = False
         self.uart = serial.Serial(port, 115200)
 
         self.pub_current_angle = rospy.Publisher('current_angle', Float32MultiArray, queue_size=100)
@@ -104,8 +106,7 @@ class device():
         self.pmp_state = b'\x00'
         self.emergency = b'\x00'
         self.led_hsv = [0, 0, 0]
-        self.connect_flag = False
-        self.start_flag = False
+
 
         while not self.connect_flag:
             pass
