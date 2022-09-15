@@ -451,6 +451,7 @@ class RelWork(smach.State):
     def back_cmd_callback(self,msg):
         self.back_cmd = True
         
+        
     def execute(self, ud):
         global start_cmd
         rospy.Subscriber("back_cmd",Empty,self.back_cmd_callback,queue_size=100)
@@ -461,24 +462,27 @@ class RelWork(smach.State):
         p_stepper_state(1)
         p_pmp_state(3)
         rospy.sleep(4)
-        p_pmp_state(0)
 
         while not rospy.is_shutdown():
             if start_cmd:
                 start_cmd = False
                 if self.task_counter % 4 == 1:
+                    p_pmp_state(0)
                     self.task_counter += 1
                     return 'second'
                 else:
+                    p_pmp_state(0)
                     self.task_counter += 1
                     return 'own'
             if self.back_cmd:
                 self.back_cmd = False
                 if self.task_counter % 4 == 1:
+                    p_pmp_state(0)
                     self.task_counter += 1
                     return 'second'
                 else:
-                    self.task_counter += 1
+                    p_pmp_state(0)
+            g        self.task_counter += 1
                     return 'com'
             self.r2.sleep()
 
