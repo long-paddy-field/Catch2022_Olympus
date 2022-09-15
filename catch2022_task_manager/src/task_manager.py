@@ -35,7 +35,7 @@ com_jaguar_pos_y = [-0.845, -0.845, -0.845, -0.845, -0.845, -0.845, -0.845, -0.8
 box_jaguar_pos_x = [0.585, 0.685, 0.785, 0.585, 0.685, 0.785, 0.585, 0.685, 0.785, 0.585, 0.685, 0.785,0.585, 0.685, 0.785, 0.585, 0.685, 0.785]
 box_jaguar_pos_y = [0.029, 0.029, 0.029, 0.129, 0.129, 0.129, 0.230, 0.230, 0.230, 0.330, 0.330, 0.330, 0.431, 0.431, 0.431, 0.531, 0.531, 0.531]
 
-pub_target_location = rospy.Publisher("target_location",Float32MultiArray,queue_size=100)
+pub_target_location = rospy.Publisher("move_cmd",Float32MultiArray,queue_size=100)
 pub_servo_cmd       = rospy.Publisher("servo_cmd",Int8,queue_size=100)
 pub_pmp_state       = rospy.Publisher("pmp_state",Int8,queue_size=100)
 pub_stepper_state   = rospy.Publisher("stepper_state",Int8,queue_size=100)
@@ -482,7 +482,7 @@ class RelWork(smach.State):
                     return 'second'
                 else:
                     p_pmp_state(0)
-            g        self.task_counter += 1
+                    self.task_counter += 1
                     return 'com'
             self.r2.sleep()
 
