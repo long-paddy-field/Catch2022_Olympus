@@ -13,7 +13,7 @@
         <param name="autofocus" value="true" />
         <param name="focus" value="51" />
     </node> -->
-    <node name="jaguar_indicator" pkg="catch2022_jaguar_indicator" type="jaguar_indicator.py" output = "screen">
+    <node name="jaguar_indicator" pkg="catch2022_jaguar_indicator" type="jaguar_indicator.py">
         <remap from="image_raw" to="/usb_cam/image_raw" />
     </node>
      

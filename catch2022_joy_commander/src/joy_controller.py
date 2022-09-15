@@ -34,6 +34,8 @@ class joy_controller():
         self.pub_servo_cmd          = rospy.Publisher("servo_cmd",Int8,queue_size=100)
         self.pub_pmp_state          = rospy.Publisher("pmp_state",Int8,queue_size=100)
         self.pub_stepper_cmd        = rospy.Publisher("stepper_cmd",Bool,queue_size=100)
+        self.pub_stepper_state        = rospy.Publisher("stepper_state",Int8,queue_size=100)
+
         self.pub_start_cmd          = rospy.Publisher("start_cmd",Empty,queue_size=100)
         self.pub_back_cmd           = rospy.Publisher("back_cmd",Empty,queue_size=100)
         self.pub_is_handy           = rospy.Publisher("is_handy",Bool, queue_size=100)
@@ -58,6 +60,7 @@ class joy_controller():
         self.pmp_state = Int8(data = 0)
         self.is_handy  = Bool(data = True)
         self.stepper_cmd = Bool(data = True)
+        self.stepper_state = Int8(data = 8)
 
         self.enable = False
         
@@ -141,7 +144,9 @@ class joy_controller():
 
                 if self.btn6.is_enabled(self.buttons[6]):  # サーボ許可
                     self.pub_servo_enable.publish()
-
+                if self.btn7.is_enabled(self.buttons[7]):
+                    self.stepper_state.data = 8
+                    self.pub_stepper_state.publish(self.stepper_state)
                 if self.btn8.is_enabled(self.buttons[8]):
                     self.pub_back_cmd.publish()
                                         

@@ -58,6 +58,7 @@ def p_pmp_state(x: Int8):
 
     i_msg = Int8(data=x)
     pub_pmp_state.publish(i_msg)
+    rospy.loginfo("pub")
 
 def p_stepper_state(x: Int8):
     global pub_stepper_state
@@ -294,19 +295,19 @@ class GrabOwn(smach.State):
         start_cmd = False
         self.is_completed = False
         p_pmp_state(3)
+        self.counter = 1
 
         while not rospy.is_shutdown():
-            p_stepper_state(2)
-            self.r.sleep()
-            p_stepper_state(0)
+            p_stepper_state(2*(self.counter%2))
             self.r.sleep()
             if start_cmd:
                 start_cmd = False
                 return 'done'
-            if self.is_completed == True:
+            if self.is_completed == True and self.counter % 2 == 0:
                 playsound("../catkin_ws/src/catch2022_Olympus/catch2022_task_manager/assets/get_work.wav")
                 start_cmd = False
                 return 'done'
+            self.counter += 1
 
 class SeekCom(smach.State):
     def __init__(self):

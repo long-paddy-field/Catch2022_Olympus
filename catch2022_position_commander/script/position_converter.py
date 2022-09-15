@@ -81,7 +81,6 @@ class position_converter():
         self.enable1 = True
 
     def servo_enable_callback(self,msg):
-        rospy.loginfo("gyaaaaaaaaaaaaaaaaaaaaa")
         self.servo_enable=True
         
     
@@ -116,7 +115,6 @@ class position_converter():
             if self.enable1:
                 self.pub_current_position.publish(self.current_position)
             if self.enable2:
-                rospy.loginfo("syorisyori")
                 self.pub_move_rad.publish(self.move_rad)
                 if self.servo_enable:
                     self.pub_servo_angle.publish(self.servo_angle)
