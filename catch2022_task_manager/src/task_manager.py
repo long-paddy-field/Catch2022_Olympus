@@ -171,6 +171,7 @@ class Connect(smach.State):
         self.pub_device_start = rospy.Publisher('device_start', Empty, queue_size=100)
 
         self.pub_connect_device.publish()
+        rospy.loginfo("connect_device published")
         while not rospy.is_shutdown():
             if is_connected and start_cmd:
                 self.pub_device_start.publish()
