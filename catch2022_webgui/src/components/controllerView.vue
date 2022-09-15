@@ -4,6 +4,7 @@
     <!-- <v-slider v-model="servoRef" label="track-color" v-on:update:model-value="() => { servoAngleTopic.publish({ data: servoRef }) }"></v-slider> -->
     <v-btn @click="()=>{connectDeviceTopic.publish({})}">Connect</v-btn><br>
     <v-btn @click="()=>{deviceStartTopic.publish({})}">Start</v-btn><br>
+    <v-btn @click="()=>{stepperStateTopic.publish({data:8})}">Home</v-btn><br>
     Arm0 angle
     <v-slider v-model="moveRadRef0" label="track-color" max=250 thumb-label v-on:update:model-value="() => { moveRadTopic.publish({ data: [(moveRadRef0-125)*Math.PI/180, (moveRadRef1-138)*Math.PI/180] }) }"></v-slider>
     Arm1 angle

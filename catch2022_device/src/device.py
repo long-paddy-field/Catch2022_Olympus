@@ -56,6 +56,8 @@ class device():
         self.led_hsv = msg.data
 
     def connect_device_callback(self, msg):
+        self.uart.reset_input_buffer()
+        rospy.loginfo("device: connect_decvice received")
         if not self.connect_flag:
             self.uart.write(b'\xFF\xFF\xFF\xFF')
             receive = self.uart.read(4)
@@ -64,6 +66,8 @@ class device():
                 self.pub_is_connected.publish()
 
     def device_start_callback(self, msg):
+        self.uart.reset_input_buffer()
+        rospy.loginfo("device: device_start received")
         if not self.start_flag:
             self.uart.write(b'\xFF\xFF\xFF\xFF')
             receive = self.uart.read(4)
@@ -132,7 +136,6 @@ class device():
     def receiveSerial(self):
         # 受信と整形
         receiveData = self.uart.read(11)
-
         msg = struct.unpack("<ffccc", receiveData)
         if (not (msg[3] == b'\x00' and msg[4] == b'\xff')):
             print(self.uart.readline())
