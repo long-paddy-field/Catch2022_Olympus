@@ -58,7 +58,6 @@ def p_pmp_state(x: Int8):
 
     i_msg = Int8(data=x)
     pub_pmp_state.publish(i_msg)
-    rospy.loginfo("pub")
 
 def p_stepper_state(x: Int8):
     global pub_stepper_state
@@ -174,7 +173,7 @@ class Connect(smach.State):
         self.pub_connect_device.publish()
         rospy.loginfo("connect_device published")
         while not rospy.is_shutdown():
-            rospy.loginfo("%d,%d",is_connected,start_cmd)
+            # rospy.loginfo("%d,%d",is_connected,start_cmd)
             if is_connected and start_cmd:
                 self.pub_device_start.publish()
                 start_cmd = False
@@ -256,7 +255,7 @@ class SeekOwn(smach.State):#自陣エリアのワークへ移動
         
         while not rospy.is_shutdown():
             p_stepper_state(1)
-            rospy.loginfo("%d,%d,%d",is_handy,is_enable,is_ended)
+            # rospy.loginfo("%d,%d,%d",is_handy,is_enable,is_ended)
             if not is_handy:
                 if self.task_counter % 3 == 1:
                     p_servo_cmd(1)
@@ -299,7 +298,8 @@ class GrabOwn(smach.State):
 
         while not rospy.is_shutdown():
             p_stepper_state(2*(self.counter%2))
-            self.r.sleep()
+            rospy.loginfo("nya")
+            rospy.sleep(3)
             if start_cmd:
                 start_cmd = False
                 return 'done'
@@ -379,9 +379,9 @@ class GrabCom(smach.State):
         
         while not rospy.is_shutdown():
             p_stepper_state(4)
-            self.r.sleep()
+            rospy.sleep(3)
             p_stepper_state(0)
-            self.r.sleep()
+            rospy.sleep(3)
             if start_cmd:
                 start_cmd = False
                 if self.task_counter % 2 == 0 and not self.task_counter == 8:
