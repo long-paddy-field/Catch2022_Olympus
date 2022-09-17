@@ -116,6 +116,7 @@ class position_converter():
                 self.pub_current_position.publish(self.current_position)
             if self.enable2:
                 self.pub_move_rad.publish(self.move_rad)
+                # rospy.loginfo(self.servo_enable)
                 if self.servo_enable:
                     self.pub_servo_angle.publish(self.servo_angle)
                     self.servo_enable = False

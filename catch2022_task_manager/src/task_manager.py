@@ -252,9 +252,10 @@ class SeekOwn(smach.State):#自陣エリアのワークへ移動
         playsound("../catkin_ws/src/catch2022_Olympus/catch2022_task_manager/assets/SeekWork.wav")
         start_cmd = False
         is_enable = True
-        
+
+        p_stepper_state(1)
+        rospy.sleep(1)
         while not rospy.is_shutdown():
-            p_stepper_state(1)
             # rospy.loginfo("%d,%d,%d",is_handy,is_enable,is_ended)
             if not is_handy:
                 if self.task_counter % 3 == 1:
@@ -296,18 +297,21 @@ class GrabOwn(smach.State):
         p_pmp_state(3)
         self.counter = 1
 
+        p_stepper_state(2)
+        rospy.sleep(1)
+
         while not rospy.is_shutdown():
-            p_stepper_state(2*(self.counter%2))
-            rospy.loginfo("nya")
+            p_stepper_state(0)
             rospy.sleep(3)
             if start_cmd:
                 start_cmd = False
                 return 'done'
-            if self.is_completed == True and self.counter % 2 == 0:
+            if self.is_completed == True:
                 playsound("../catkin_ws/src/catch2022_Olympus/catch2022_task_manager/assets/get_work.wav")
                 start_cmd = False
                 return 'done'
-            self.counter += 1
+            p_stepper_state(2)
+            rospy.sleep(3)
 
 class SeekCom(smach.State):
     def __init__(self):
@@ -376,10 +380,10 @@ class GrabCom(smach.State):
         rospy.Subscriber("is_grabbed",Int8,self.is_grabbed_callback,queue_size=100)
         self.is_completed = False
         p_pmp_state(3)
+        p_stepper_state(4)
+        rospy.sleep(3)
         
         while not rospy.is_shutdown():
-            p_stepper_state(4)
-            rospy.sleep(3)
             p_stepper_state(0)
             rospy.sleep(3)
             if start_cmd:
@@ -399,6 +403,8 @@ class GrabCom(smach.State):
                 else:
                     self.task_counter += 1
                     return 'done'
+            p_stepper_state(4)
+            rospy.sleep(3)
                     
 class SeekBox(smach.State):
     def __init__(self):
