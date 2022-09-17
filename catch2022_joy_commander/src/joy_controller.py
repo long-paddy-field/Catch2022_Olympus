@@ -32,10 +32,10 @@ class joy_controller():
         self.field = field_color
         self.pub_move_cmd           = rospy.Publisher("move_cmd",Float32MultiArray,queue_size=100)
         self.pub_servo_cmd          = rospy.Publisher("servo_cmd",Int8,queue_size=100)
-        self.pub_servo_cmd_ex          = rospy.Publisher("servo_cmd_ex",Int8,queue_size=100)
+        self.pub_servo_cmd_ex       = rospy.Publisher("servo_cmd_ex",Int8,queue_size=100)
         self.pub_pmp_state          = rospy.Publisher("pmp_state",Int8,queue_size=100)
         self.pub_stepper_cmd        = rospy.Publisher("stepper_cmd",Bool,queue_size=100)
-        self.pub_stepper_state        = rospy.Publisher("stepper_state",Int8,queue_size=100)
+        self.pub_stepper_state      = rospy.Publisher("stepper_state",Int8,queue_size=100)
 
         self.pub_start_cmd          = rospy.Publisher("start_cmd",Empty,queue_size=100)
         self.pub_back_cmd           = rospy.Publisher("back_cmd",Empty,queue_size=100)
@@ -44,11 +44,13 @@ class joy_controller():
         
         self.pub_grab_cmd           = rospy.Publisher("grab_cmd",Empty,queue_size=100)
         self.pub_release_cmd        = rospy.Publisher("release_cmd",Empty,queue_size=100)
-        self.pub_quick_release_cmd        = rospy.Publisher("quick_release_cmd",Empty,queue_size=100)
+        self.pub_quick_release_cmd  = rospy.Publisher("quick_release_cmd",Empty,queue_size=100)
         
         self.sub_joy                = rospy.Subscriber("joy",Joy,self.joy_callback,queue_size=100)
         self.sub_current_position   = rospy.Subscriber("current_position",Float32MultiArray,self.current_position_callback,queue_size=100)
         self.sub_servo_cmd          = rospy.Subscriber("servo_cmd",Int8,self.servo_cmd_callback,queue_size=100)
+        
+        self.pub_task_selector      = rospy.Publisher("task_selector",Int8,queue_size=100)
         
         self.delta_x = 0
         self.delta_y = 0
@@ -64,6 +66,7 @@ class joy_controller():
         self.stepper_cmd = Bool(data = True)
         self.stepper_state = Int8(data = 8)
         self.servo_cmd_ex = Int8(data = 0)
+        self.task_shift = Int8(data = 0)
 
         self.enable = False
         
@@ -109,8 +112,9 @@ class joy_controller():
             if self.enable and not len(self.buttons) == 0:
                 self.move_cmd.data = [self.current_x+self.delta_x,self.current_y+self.delta_y]
                 rospy.loginfo(self.is_handy)
+
                 if self.is_handy.data:
-                    if self.btn0.is_enabled(self.buttons[0]):
+                    if self.btn3.is_enabled(self.buttons[3]):
                         self.pub_quick_release_cmd.publish()
                     # if self.btn0.is_enabled(self.buttons[0]):     #青シール側の把持のみ操作
                     #     if self.pmp_state.data < 2 :
@@ -150,6 +154,13 @@ class joy_controller():
                     self.pub_servo_cmd_ex.publish(self.servo_cmd_ex)
                     # rospy.loginfo("joyjoy")
                     # self.pub_pmp_state.publish(self.pmp_state)
+
+                if self.btn0.is_enabled(self.buttons[0]):
+                    self.task_shift = -1
+                elif self.btn2.is_enabled(self.buttons[2]):
+                    self.task_shift = 1
+                else:
+                    self.task_shift = 0
 
                 if self.btn6.is_enabled(self.buttons[6]):  # サーボ許可
                     self.pub_servo_enable.publish()
