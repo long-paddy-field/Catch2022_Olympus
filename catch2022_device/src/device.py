@@ -99,8 +99,6 @@ class device():
 
         # 変数の初期化
         self.move_deg = [155, 22]
-        self.past_deg = [0, 0]
-        self.move_cmd_theta = [90, 78]
         self.servo_angle = 0x00
         self.stepper_state = b'\x00'
         self.pmp_state = b'\x00'
