@@ -154,10 +154,6 @@ def jaguar_position_callback(msg):
                 own_arm_pos_x[num[own_tag]] = (own_jaguar_pos_x[own_tag]+own_jaguar_pos_x[own_tag-3])/2
                 own_arm_pos_y[num[own_tag]] = (own_jaguar_pos_y[own_tag]+own_jaguar_pos_y[own_tag-3])/2
 
-
-            
-
-
 # ここからステートマシン
 class Connect(smach.State):
     def __init__(self):
@@ -270,7 +266,7 @@ class SeekOwn(smach.State):#自陣エリアのワークへ移動
             if start_cmd:
                 rospy.loginfo("SeekOwn end")
                 start_cmd = False
-                is_ended = False
+                is_ended  = False
                 self.task_counter += 1
                 return 'done'
             self.r.sleep()

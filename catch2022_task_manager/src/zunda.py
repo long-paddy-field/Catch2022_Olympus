@@ -21,7 +21,16 @@ class Zunda():
         while not rospy.is_shutdown():
             if self.shout_flag:
                 if self.zunda_shout == "connect":
-                    pass
+                    playsound("../catkin_ws/src/catch2022_Olympus/catch2022_task_manager/assets/CONNECT.wav")
+                    self.shout_flag = False
+                elif self.zunda_shout == "manual":
+                    playsound("../catkin_ws/src/catch2022_Olympus/catch2022_task_manager/assets/Hand.wav")
+                    self.shout_flag = False
+                elif self.zunda_shout == "auto":
+                    playsound("../catkin_ws/src/catch2022_Olympus/catch2022_task_manager/assets/Auto.wav")
+                    self.shout_flag = False
+
+
 
 if __name__=='__main__':
     rospy.init_node("zunda_manager")
