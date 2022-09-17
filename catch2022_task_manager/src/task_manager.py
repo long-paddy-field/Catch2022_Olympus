@@ -81,10 +81,10 @@ def is_handy_callback(msg):  # 手動or自動
     if past_is_handy and not is_handy:
         is_enable = True
         is_ended = False
-        playsound("../catkin_ws/src/catch2022_Olympus/catch2022_task_manager/assets/AUTO.wav")
+        # playsound("../catkin_ws/src/catch2022_Olympus/catch2022_task_manager/assets/AUTO.wav")
     elif not past_is_handy and is_handy:
-        playsound("../catkin_ws/src/catch2022_Olympus/catch2022_task_manager/assets/Hand.wav")
-
+        # playsound("../catkin_ws/src/catch2022_Olympus/catch2022_task_manager/assets/Hand.wav")
+        pass
 
 def start_cmd_callback(msg):  # Stateの遷移コマンド
     global start_cmd
@@ -98,7 +98,7 @@ def end_cmd_callback(msg):  # 移動の終了コマンド
 
 def is_connected_callback(msg):  # マイコンとの接続確認
     global is_connected
-    playsound("../catkin_ws/src/catch2022_Olympus/catch2022_task_manager/assets/CONNECT.wav")
+    # playsound("../catkin_ws/src/catch2022_Olympus/catch2022_task_manager/assets/CONNECT.wav")
     is_connected = True
 
 def cal_dist(x0:float,y0:float,x1:float,y1:float):
@@ -210,7 +210,7 @@ class Init(smach.State): #諸々の初期化待機
         
         start_cmd = False
 
-        playsound("../catkin_ws/src/catch2022_Olympus/catch2022_task_manager/assets/START.wav")
+        # playsound("../catkin_ws/src/catch2022_Olympus/catch2022_task_manager/assets/START.wav")
         
         
         while not rospy.is_shutdown():
@@ -249,7 +249,7 @@ class SeekOwn(smach.State):#自陣エリアのワークへ移動
             rospy.loginfo('all task completed')
             return 'completed'
         
-        playsound("../catkin_ws/src/catch2022_Olympus/catch2022_task_manager/assets/SeekWork.wav")
+        # playsound("../catkin_ws/src/catch2022_Olympus/catch2022_task_manager/assets/SeekWork.wav")
         start_cmd = False
         is_enable = True
 
@@ -307,7 +307,7 @@ class GrabOwn(smach.State):
                 start_cmd = False
                 return 'done'
             if self.is_completed == True:
-                playsound("../catkin_ws/src/catch2022_Olympus/catch2022_task_manager/assets/get_work.wav")
+                # playsound("../catkin_ws/src/catch2022_Olympus/catch2022_task_manager/assets/get_work.wav")
                 start_cmd = False
                 return 'done'
             p_stepper_state(2)
@@ -334,7 +334,7 @@ class SeekCom(smach.State):
             rospy.loginfo('all task completed')
             return 'completed'
 
-        playsound("../catkin_ws/src/catch2022_Olympus/catch2022_task_manager/assets/ComArea.wav")
+        # playsound("../catkin_ws/src/catch2022_Olympus/catch2022_task_manager/assets/ComArea.wav")
         start_cmd = False
         is_enable = True
 
@@ -408,10 +408,14 @@ class GrabCom(smach.State):
                     
 class SeekBox(smach.State):
     def __init__(self):
-        smach.State.__init__(self, outcomes=['done'])
+        smach.State.__init__(self, outcomes=['done',"quick"])
 
         self.task_counter = 0
+        self.quick_cmd = False
         self.r = rospy.Rate(10)
+
+    def quick_callback(self,msg):
+        self.quick_cmd = True
 
     def execute(self, ud):
         global box_pos_x
@@ -421,7 +425,9 @@ class SeekBox(smach.State):
         global is_ended
         global start_cmd
 
+        rospy.Subscriber("quick_release_cmd",Empty,self.quick_callback,queue_size=100)
         start_cmd = False
+        self.quick_cmd = False
         is_enable = True
 
         while not rospy.is_shutdown():
@@ -442,6 +448,12 @@ class SeekBox(smach.State):
                 start_cmd = False
                 is_ended = False
                 return 'done'
+            if self.quick_cmd:
+                self.task_counter += 1
+                start_cmd = False
+                is_ended = False
+                self.quick_cmd = False
+                return "quick"
             self.r.sleep()
             
 class RelWork(smach.State):
@@ -482,6 +494,40 @@ class RelWork(smach.State):
                 return 'com'
             self.r2.sleep()
 
+class QuickRel(smach.State):
+    def __init__(self):
+        smach.State.__init__(self, outcomes=['own','com'])
+                
+        self.task_counter = 0
+        
+        self.back_cmd  = False
+        
+        self.r2 = rospy.Rate(10)
+
+    def back_cmd_callback(self,msg):
+        self.back_cmd = True
+        
+        
+    def execute(self, ud):
+        global start_cmd
+        rospy.Subscriber("back_cmd",Empty,self.back_cmd_callback,queue_size=100)
+        
+        start_cmd = False
+        self.back_cmd = False
+
+        while not rospy.is_shutdown():
+            if start_cmd:
+                start_cmd = False
+                p_pmp_state(0)
+                self.task_counter += 1
+                return 'own'
+            if self.back_cmd:
+                self.back_cmd = False
+                p_pmp_state(0)
+                self.task_counter += 1
+                return 'com'
+            self.r2.sleep()
+    
 class Terminal(smach.State):
     def __init__(self):
         smach.State.__init__(self, outcomes=['done'])
@@ -502,7 +548,7 @@ if __name__ == '__main__':
         com_arm_pos_y = [0.745, 0.745, 0.745, 0.745, 0.745, 0.745, 0.745, 0.745]
         box_pos_x = [ 0.685, 0.685, 0.685, 0.685, 0.685, 0.685, 0.685, 0.685, 0.685, 0.685, 0.685, 0.685]
         # box_pos_y = [-0.537,-0.437,-0.337,-0.437,-0.336,-0.236,-0.136,-0.236,-0.135,-0.035, 0.065,-0.035]
-        box_pos_y = [-0.029,0.071,-0.029,-0.129,-0.230,-0.130,-0.230,-0.330,-0.431,-0.331,-0.431,-0.531]
+        box_pos_y = [-0.029,-0.129,-0.129,-0.230,-0.230,-0.330,-0.431,-0.531]
     elif field_color == "red":
         own_arm_pos_x = [0.435,0.435,0.235,0.035,0.035,-0.165,-0.365,-0.365]
         own_arm_pos_y = [-0.448,-0.448,-0.448,-0.448,-0.448,-0.448,-0.448,-0.448]
@@ -529,8 +575,9 @@ if __name__ == '__main__':
         smach.StateMachine.add('GrabOwn',GrabOwn(),transitions={'done':'SeekBox'})
         smach.StateMachine.add('SeekCom',SeekCom(),transitions={'done':'GrabCom','completed':'Terminal'})
         smach.StateMachine.add('GrabCom',GrabCom(),transitions={'done':'SeekBox','second':'SeekCom'})
-        smach.StateMachine.add('SeekBox',SeekBox(),transitions={'done':'RelWork'})
+        smach.StateMachine.add('SeekBox',SeekBox(),transitions={'done':'RelWork',"quick":"QuickRel"})
         smach.StateMachine.add('RelWork',RelWork(),transitions={'second':'SeekBox','own':'SeekOwn','com':'SeekCom'})
+        smach.StateMachine.add('QuickRel',QuickRel(),transitions={'own':'SeekOwn','com':'SeekCom'})
         smach.StateMachine.add('Terminal',Terminal(),transitions={'done':'end'})
     
     sis = smach_ros.IntrospectionServer('smach_server', sm_top, '/SM_ROOT')

@@ -19,6 +19,7 @@ class position_converter():
         self.sub_move_cmd           = rospy.Subscriber("move_cmd",Float32MultiArray,self.move_cmd_callback,queue_size=100)
         self.sub_servo_cmd          = rospy.Subscriber("servo_cmd",Int8,self.servo_cmd_callback,queue_size=100)
         self.sub_servo_enable       = rospy.Subscriber("servo_enable",Empty,self.servo_enable_callback,queue_size=100)
+        self.sub_servo_cmd_ex          = rospy.Subscriber("servo_cmd_ex",Int8,self.servo_cmd_ex_callback,queue_size=100)
         
         self.pub_current_position   = rospy.Publisher("current_position",Float32MultiArray,queue_size = 100)       
         self.sub_current_angle      = rospy.Subscriber("current_angle",Float32MultiArray,self.current_angle_callback,queue_size=100)
@@ -39,7 +40,9 @@ class position_converter():
         self.enable2 = False
         self.enable3 = False
         self.servo_enable = False
-        
+        self.servo_cmd = 0
+        self.servo_cmd_ex = 0
+
         self.past_rad1 = 0
         
         self.r = rospy.Rate(100)
@@ -58,18 +61,16 @@ class position_converter():
         self.move_rad.data = [result[0],result[1]]
     
     def servo_cmd_callback(self,msg):
+        self.servo_cmd = msg.data
         # self.enable3 = True
-        self.servo_angle.data = (msg.data+3) * (math.pi/2) - (self.current_angle.data[0]+self.current_angle.data[1])
         # if msg.data == True:
         #     self.servo_angle.data = -1 * (self.current_angle.data[0]+self.current_angle.data[1])
         # else :
         #     self.servo_angle.data = math.pi/2 - (self.current_angle.data[0]+self.current_angle.data[1])
-            
-        if self.servo_angle.data < 0:
-            self.servo_angle.data += 2*math.pi
-        elif self.servo_angle.data > math.pi*2:
-            self.servo_angle.data -= 2*math.pi
-    
+        
+    def servo_cmd_ex_callback(self,msg):
+        self.servo_cmd_ex += msg.data
+
     def current_angle_callback(self,msg):
         self.current_angle.data = msg.data
         # rospy.loginfo(self.current_angle.data)
@@ -117,6 +118,12 @@ class position_converter():
             if self.enable2:
                 self.pub_move_rad.publish(self.move_rad)
                 # rospy.loginfo(self.servo_enable)
+                self.servo_angle.data = (self.servo_cmd+self.servo_cmd_ex+3) * (math.pi/2) - (self.current_angle.data[0]+self.current_angle.data[1])
+                if self.servo_angle.data < 0:
+                    self.servo_angle.data += 2*math.pi
+                elif self.servo_angle.data > math.pi*2:
+                    self.servo_angle.data -= 2*math.pi
+                
                 if self.servo_enable:
                     self.pub_servo_angle.publish(self.servo_angle)
                     self.servo_enable = False
