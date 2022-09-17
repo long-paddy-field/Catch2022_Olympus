@@ -12,6 +12,7 @@ from std_msgs.msg import Int8
 from std_msgs.msg import Empty
 from std_msgs.msg import Bool
 from std_msgs.msg import Int16MultiArray
+from std_msgs.msg import String
 
 own_arm_pos_x = [0, 0, 0, 0, 0, 0, 0, 0]
 own_arm_pos_y = [0, 0, 0, 0, 0, 0, 0, 0]
@@ -40,6 +41,7 @@ pub_servo_cmd       = rospy.Publisher("servo_cmd",Int8,queue_size=100)
 pub_pmp_state       = rospy.Publisher("pmp_state",Int8,queue_size=100)
 pub_stepper_state   = rospy.Publisher("stepper_state",Int8,queue_size=100)
 pub_led_hsv         = rospy.Publisher("led_hsv",Int16MultiArray,queue_size=100)
+pub_zunda_call      = rospy.Publisher("zunda_call",String,queue_size=100)
 
 def p_target_location(x:float,y:float):
     global pub_target_location
@@ -81,10 +83,11 @@ def is_handy_callback(msg):  # 手動or自動
     if past_is_handy and not is_handy:
         is_enable = True
         is_ended = False
+        pub_zunda_call.publish(data="auto")
         # playsound("../catkin_ws/src/catch2022_Olympus/catch2022_task_manager/assets/AUTO.wav")
     elif not past_is_handy and is_handy:
+        pub_zunda_call.publish(data="manual")
         # playsound("../catkin_ws/src/catch2022_Olympus/catch2022_task_manager/assets/Hand.wav")
-        pass
 
 def start_cmd_callback(msg):  # Stateの遷移コマンド
     global start_cmd
@@ -98,6 +101,7 @@ def end_cmd_callback(msg):  # 移動の終了コマンド
 
 def is_connected_callback(msg):  # マイコンとの接続確認
     global is_connected
+    pub_zunda_call.publish(data="connect")
     # playsound("../catkin_ws/src/catch2022_Olympus/catch2022_task_manager/assets/CONNECT.wav")
     is_connected = True
 
@@ -205,7 +209,7 @@ class Init(smach.State): #諸々の初期化待機
         global start_cmd
         
         start_cmd = False
-
+        pub_zunda_call.publish(data="start")
         # playsound("../catkin_ws/src/catch2022_Olympus/catch2022_task_manager/assets/START.wav")
         
         
@@ -245,6 +249,7 @@ class SeekOwn(smach.State):#自陣エリアのワークへ移動
             rospy.loginfo('all task completed')
             return 'completed'
         
+        pub_zunda_call.publish(data="seekwork")
         # playsound("../catkin_ws/src/catch2022_Olympus/catch2022_task_manager/assets/SeekWork.wav")
         start_cmd = False
         is_enable = True
@@ -303,6 +308,7 @@ class GrabOwn(smach.State):
                 start_cmd = False
                 return 'done'
             if self.is_completed == True:
+                pub_zunda_call.publish(data="getwork")
                 # playsound("../catkin_ws/src/catch2022_Olympus/catch2022_task_manager/assets/get_work.wav")
                 start_cmd = False
                 return 'done'
@@ -330,6 +336,7 @@ class SeekCom(smach.State):
             rospy.loginfo('all task completed')
             return 'completed'
 
+        pub_zunda_call.publish(data="comarea")
         # playsound("../catkin_ws/src/catch2022_Olympus/catch2022_task_manager/assets/ComArea.wav")
         start_cmd = False
         is_enable = True

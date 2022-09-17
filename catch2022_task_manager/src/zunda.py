@@ -6,7 +6,7 @@ from std_msgs.msg import String
 
 class Zunda():
     def __init__(self):
-        rospy.Subscriber("zunda_call",String,self.zunda_callback(),queue_size=100)
+        rospy.Subscriber("zunda_call",String,self.zunda_callback,queue_size=100)
         
         self.zunda_shout = "zunda"
         self.shout_flag  = False
@@ -29,7 +29,19 @@ class Zunda():
                 elif self.zunda_shout == "auto":
                     playsound("../catkin_ws/src/catch2022_Olympus/catch2022_task_manager/assets/Auto.wav")
                     self.shout_flag = False
-
+                elif self.zunda_shout == "start":
+                    playsound("../catkin_ws/src/catch2022_Olympus/catch2022_task_manager/assets/START.wav")
+                    self.shout_flag = False
+                elif self.shout_flag == "seekwork":
+                    playsound("../catkin_ws/src/catch2022_Olympus/catch2022_task_manager/assets/SeekWork.wav")
+                    self.shout_flag = False
+                elif self.shout_flag == "getwork":
+                    playsound("../catkin_ws/src/catch2022_Olympus/catch2022_task_manager/assets/get_work.wav")
+                    self.shout_flag = False
+                elif self.shout_flag == "comarea":
+                    playsound("../catkin_ws/src/catch2022_Olympus/catch2022_task_manager/assets/ComArea.wav")
+                    self.shout_flag == False
+                
 
 
 if __name__=='__main__':
