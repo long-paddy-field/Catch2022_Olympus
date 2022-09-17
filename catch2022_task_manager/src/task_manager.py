@@ -428,10 +428,8 @@ class SeekBox(smach.State):
             p_stepper_state(0)
             p_pmp_state(3)
             if not is_handy:
-                if self.task_counter % 4 == 1:
+                if self.task_counter % 3 == 1:
                     p_servo_cmd(0)
-                elif  self.task_counter % 4 == 2:
-                    p_servo_cmd(2)
                 else:
                     p_servo_cmd(1)                
                 if is_enable and not is_ended:
@@ -474,24 +472,14 @@ class RelWork(smach.State):
         while not rospy.is_shutdown():
             if start_cmd:
                 start_cmd = False
-                if self.task_counter % 4 == 1:
-                    p_pmp_state(0)
-                    self.task_counter += 1
-                    return 'second'
-                else:
-                    p_pmp_state(0)
-                    self.task_counter += 1
-                    return 'own'
+                p_pmp_state(0)
+                self.task_counter += 1
+                return 'own'
             if self.back_cmd:
                 self.back_cmd = False
-                if self.task_counter % 4 == 1:
-                    p_pmp_state(0)
-                    self.task_counter += 1
-                    return 'second'
-                else:
-                    p_pmp_state(0)
-                    self.task_counter += 1
-                    return 'com'
+                p_pmp_state(0)
+                self.task_counter += 1
+                return 'com'
             self.r2.sleep()
 
 class Terminal(smach.State):
