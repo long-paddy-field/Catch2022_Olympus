@@ -111,7 +111,8 @@ class joy_controller():
             # rospy.loginfo(self.buttons)
             if self.enable and not len(self.buttons) == 0:
                 self.move_cmd.data = [self.current_x+self.delta_x,self.current_y+self.delta_y]
-                rospy.loginfo(self.is_handy)
+                # rospy.loginfo("%f,%f",self.delta_x,self.delta_y)
+                # rospy.loginfo(self.is_handy)
 
                 if self.is_handy.data:
                     if self.btn3.is_enabled(self.buttons[3]):
@@ -137,11 +138,11 @@ class joy_controller():
                     #     self.pmp_state.data = 3
                         
                     if self.btn4.is_enabled(self.buttons[4]):     #サーボCCW
-                        self.servo_cmd.data += 1
-                        self.servo_cmd_ex = 1
-                    elif self.btn5.is_enabled(self.buttons[5]):   #サーボCW
                         self.servo_cmd.data -= 1
                         self.servo_cmd_ex = -1
+                    elif self.btn5.is_enabled(self.buttons[5]):   #サーボCW
+                        self.servo_cmd.data += 1
+                        self.servo_cmd_ex = 1
                     # if self.btn6.is_enabled(self.buttons[6]):     #ステッパ下降
                     #     self.stepper_cmd.data = False
                     #     self.pub_stepper_cmd.publish(self.stepper_cmd)
@@ -149,7 +150,7 @@ class joy_controller():
                     #     self.stepper_cmd.data = True
                     #     self.pub_stepper_cmd.publish(self.stepper_cmd)
                     self.pub_move_cmd.publish(self.move_cmd)     
-                    rospy.loginfo("nya")           
+                    # rospy.loginfo("nya")           
                     # self.pub_servo_cmd.publish(self.servo_cmd)
                     self.pub_servo_cmd_ex.publish(self.servo_cmd_ex)
                     # rospy.loginfo("joyjoy")
@@ -161,6 +162,8 @@ class joy_controller():
                     self.task_shift = 1
                 else:
                     self.task_shift = 0
+                self.pub_task_selector.publish(self.task_shift)
+
 
                 if self.btn6.is_enabled(self.buttons[6]):  # サーボ許可
                     self.pub_servo_enable.publish()

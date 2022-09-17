@@ -235,6 +235,13 @@ class SeekOwn(smach.State):#自陣エリアのワークへ移動
                
         self.task_counter = 0        
         self.r = rospy.Rate(10)
+        
+    def task_selector(self,msg):
+        global is_enable
+        rospy.loginfo("%d -> %d",self.task_counter,self.task_counter)
+        self.task_counter += msg.data
+        self.task_counter = self.task_counter % 8 
+        is_enable = True
                 
     def execute(self, ud):
         global own_arm_pos_x
@@ -244,6 +251,8 @@ class SeekOwn(smach.State):#自陣エリアのワークへ移動
         global is_enable
         global is_ended
         global start_cmd
+        
+        rospy.Subscriber("task_selector",Int8,self.task_selector,queue_size=100)
         
         if self.task_counter >= 8:
             rospy.loginfo('all task completed')
@@ -264,7 +273,7 @@ class SeekOwn(smach.State):#自陣エリアのワークへ移動
                 else:
                     p_servo_cmd(0)
                 if is_enable and not is_ended:
-                    rospy.loginfo("%f,%f",own_arm_pos_x[self.task_counter],own_arm_pos_y[self.task_counter])
+                    # rospy.loginfo("%f,%f",own_arm_pos_x[self.task_counter],own_arm_pos_y[self.task_counter])
                     p_target_location(own_arm_pos_x[self.task_counter],own_arm_pos_y[self.task_counter])
                     is_enable = False
                     is_ended  = False
@@ -337,7 +346,7 @@ class SeekCom(smach.State):
             return 'completed'
 
         pub_zunda_call.publish(data="comarea")
-        # playsound("../catkin_ws/src/catch2022_Olympus/catch2022_task_manager/assets/ComArea.wav")
+            # playsound("../catkin_ws/src/catch2022_Olympus/catch2022_task_manager/assets/ComArea.wav")
         start_cmd = False
         is_enable = True
 
