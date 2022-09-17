@@ -19,7 +19,7 @@ class position_converter():
         self.sub_move_cmd           = rospy.Subscriber("move_cmd",Float32MultiArray,self.move_cmd_callback,queue_size=100)
         self.sub_servo_cmd          = rospy.Subscriber("servo_cmd",Int8,self.servo_cmd_callback,queue_size=100)
         self.sub_servo_enable       = rospy.Subscriber("servo_enable",Empty,self.servo_enable_callback,queue_size=100)
-
+        
         self.pub_current_position   = rospy.Publisher("current_position",Float32MultiArray,queue_size = 100)       
         self.sub_current_angle      = rospy.Subscriber("current_angle",Float32MultiArray,self.current_angle_callback,queue_size=100)
         
@@ -95,7 +95,13 @@ class position_converter():
         elif self.field == "blue":
             rad1 = (-1*math.acos(((x**2)+(y**2)+(self.l1**2)-(self.l2**2))/(2*self.l1*math.sqrt(x**2+y**2))))+math.atan2(y,x)
             
-        rad2 = math.atan2(y-self.l1*math.sin(rad1),x-self.l1*math.cos(rad1))-rad1        
+        rad2 = math.atan2(y-self.l1*math.sin(rad1),x-self.l1*math.cos(rad1))-rad1
+        
+        if rad2 >= math.pi:
+            rad2 -= math.pi*2
+        elif rad2 <= -1*math.pi:
+            rad2 += math.pi*2
+        
         return rad1,rad2
     
     def poi(self, arg: float):
@@ -110,6 +116,7 @@ class position_converter():
                 self.pub_current_position.publish(self.current_position)
             if self.enable2:
                 self.pub_move_rad.publish(self.move_rad)
+                # rospy.loginfo(self.servo_enable)
                 if self.servo_enable:
                     self.pub_servo_angle.publish(self.servo_angle)
                     self.servo_enable = False

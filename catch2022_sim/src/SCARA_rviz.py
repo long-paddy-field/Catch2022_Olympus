@@ -6,6 +6,7 @@ from sensor_msgs.msg    import JointState
 from std_msgs.msg       import Header
 from std_msgs.msg       import Float32MultiArray
 from std_msgs.msg       import Float32
+from std_msgs.msg       import Int8
 
 class simulator():
     def __init__(self,field_color):
@@ -16,6 +17,7 @@ class simulator():
         
         self.sub_move_rad        = rospy.Subscriber("move_rad",Float32MultiArray,self.move_rad_callback,queue_size=100)
         self.sub_servo_angle     = rospy.Subscriber("servo_angle",Float32,self.servo_angle_callback,queue_size=100)
+        self.sub_stepper_state   = rospy.Subscriber("stepper_state",Int8,self.stepper_state_callback,queue_size=100)
         
         self.joint_states        = JointState()
         self.joint_states.header = Header()
@@ -31,6 +33,8 @@ class simulator():
         
         self.move_rad            = Float32MultiArray()
         self.servo_angle = Float32(data=0)
+        
+        self.stepper_location = 0
 
         self.r = rospy.Rate(10)
         self.update()
@@ -42,11 +46,23 @@ class simulator():
     
     def servo_angle_callback(self,msg):
         self.servo_angle.data = msg.data
+        
+    def stepper_state_callback(self,msg):
+        if msg.data == 0:
+            self.stepper_location = 0.2
+        elif msg.data == 1:
+            self.stepper_location = 0.05
+        elif msg.data == 2:
+            self.stepper_location = 0
+        elif msg.data == 4:
+            self.stepper_location = 0.10
+        elif msg.data == 8:
+            self.stepper_location = 0.2
     
     def update(self):
         while not rospy.is_shutdown():
             self.joint_states.header.stamp = rospy.Time.now()
-            self.joint_states.position = [self.current_angle.data[0],self.current_angle.data[1],0,self.servo_angle.data]
+            self.joint_states.position = [self.current_angle.data[0],self.current_angle.data[1],self.stepper_location,self.servo_angle.data]
             self.pub_current_angle.publish(self.current_angle)
             self.pub_joint_states.publish(self.joint_states)
             self.r.sleep()

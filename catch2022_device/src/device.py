@@ -64,6 +64,7 @@ class device():
             if receive == b'\xFF\xFF\xFF\xFF':
                 self.connect_flag = True
                 self.pub_is_connected.publish()
+                rospy.loginfo("is_connected published")
 
     def device_start_callback(self, msg):
         self.uart.reset_input_buffer()
@@ -81,7 +82,7 @@ class device():
         self.start_flag = False
         self.uart = serial.Serial(port, 115200)
 
-        self.pub_current_angle = rospy.Publisher('current_angle', Float32MultiArray, queue_size=100)
+        self.pub_current_angle = rospy.Publisher('current_angle_raw', Float32MultiArray, queue_size=100)
         self.pub_is_grabbed = rospy.Publisher('is_grabbed', Int8, queue_size=100)
         self.pub_is_connected = rospy.Publisher("is_connected", Empty, queue_size=100)
 
