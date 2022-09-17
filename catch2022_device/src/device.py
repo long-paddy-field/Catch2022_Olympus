@@ -142,7 +142,7 @@ class device():
         if (not (msg[3] == b'\x00' and msg[4] == b'\xff')):
             print(self.uart.readline())
             return
-        rospy.loginfo(msg)
+        # rospy.loginfo(msg)
         self.current_angle = Float32MultiArray(data=[(msg[0]-125)*math.pi/180, (msg[1]-138)*math.pi/180])
         is_grabbed = Int8(data=int.from_bytes(msg[2], 'little'))
         self.pub_current_angle.publish(self.current_angle)
