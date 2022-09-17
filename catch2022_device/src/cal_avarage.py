@@ -17,7 +17,7 @@ class CalAverage():
 
         self.current_angle = Float32MultiArray(data=[0,0])
         
-        self.r = rospy.Rate(100)
+        self.r = rospy.Rate(10)
         self.update()
 
     def current_angle_raw_callback(self,msg):
