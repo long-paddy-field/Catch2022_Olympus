@@ -238,7 +238,7 @@ class SeekOwn(smach.State):#自陣エリアのワークへ移動
         
     def task_selector(self,msg):
         global is_enable
-        rospy.loginfo("%d -> %d",self.task_counter,self.task_counter)
+        # rospy.loginfo("%d -> %d",self.task_counter,self.task_counter)
         self.task_counter += msg.data
         self.task_counter = self.task_counter % 8 
         is_enable = True
@@ -253,6 +253,8 @@ class SeekOwn(smach.State):#自陣エリアのワークへ移動
         global start_cmd
         
         rospy.Subscriber("task_selector",Int8,self.task_selector,queue_size=100)
+
+        servo_cmd = 0
         
         if self.task_counter >= 8:
             rospy.loginfo('all task completed')
@@ -269,14 +271,15 @@ class SeekOwn(smach.State):#自陣エリアのワークへ移動
             # rospy.loginfo("%d,%d,%d",is_handy,is_enable,is_ended)
             if not is_handy:
                 if self.task_counter % 3 == 1:
-                    p_servo_cmd(1)
+                    servo_cmd = 1
                 else:
-                    p_servo_cmd(0)
+                    servo_cmd = 0
                 if is_enable and not is_ended:
                     # rospy.loginfo("%f,%f",own_arm_pos_x[self.task_counter],own_arm_pos_y[self.task_counter])
-                    p_target_location(own_arm_pos_x[self.task_counter],own_arm_pos_y[self.task_counter])
+                    p_target_location(own_arm_pos_x[self.task_counter]+0.01,own_arm_pos_y[self.task_counter]-0.01)
                     is_enable = False
                     is_ended  = False
+            p_servo_cmd(servo_cmd)
             if start_cmd:
                 rospy.loginfo("SeekOwn end")
                 start_cmd = False
@@ -442,18 +445,20 @@ class SeekBox(smach.State):
         self.quick_cmd = False
         is_enable = True
 
+        servo_cmd = 0
         while not rospy.is_shutdown():
             p_stepper_state(0)
             p_pmp_state(3)
             if not is_handy:
                 if self.task_counter % 3 == 1:
-                    p_servo_cmd(0)
+                    servo_cmd = 0
                 else:
-                    p_servo_cmd(1)                
+                    servo_cmd = 1                
                 if is_enable and not is_ended:
                     p_target_location(box_pos_x[self.task_counter],box_pos_y[self.task_counter])
                     self.is_enable = False
                     self.is_ended = False
+            p_servo_cmd(servo_cmd)
             if start_cmd:
                 rospy.loginfo("SeekOwn end")
                 self.task_counter += 1
@@ -489,7 +494,7 @@ class RelWork(smach.State):
         start_cmd = False
         self.back_cmd = False
 
-        p_stepper_state(1)
+        p_stepper_state(5)
         p_pmp_state(3)
         rospy.sleep(4)
 

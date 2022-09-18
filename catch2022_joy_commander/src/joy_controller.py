@@ -18,7 +18,7 @@ class btn_manager():
     def is_enabled(self,arg:Bool):
         if arg:
             self.current_time=rospy.Time.now()
-            if self.current_time.secs - self.past_time.secs >= 0.75:
+            if self.current_time.secs - self.past_time.secs >= 1:
                 self.past_time = rospy.Time.now()
                 return True
             else:
@@ -114,9 +114,9 @@ class joy_controller():
                 # rospy.loginfo("%f,%f",self.delta_x,self.delta_y)
                 # rospy.loginfo(self.is_handy)
 
+                if self.btn3.is_enabled(self.buttons[3]):
+                    self.pub_quick_release_cmd.publish()
                 if self.is_handy.data:
-                    if self.btn3.is_enabled(self.buttons[3]):
-                        self.pub_quick_release_cmd.publish()
                     # if self.btn0.is_enabled(self.buttons[0]):     #青シール側の把持のみ操作
                     #     if self.pmp_state.data < 2 :
                     #         self.pmp_state.data += 2
@@ -143,6 +143,8 @@ class joy_controller():
                     elif self.btn5.is_enabled(self.buttons[5]):   #サーボCW
                         self.servo_cmd.data += 1
                         self.servo_cmd_ex = 1
+                    else:
+                        self.servo_cmd_ex = 0
                     # if self.btn6.is_enabled(self.buttons[6]):     #ステッパ下降
                     #     self.stepper_cmd.data = False
                     #     self.pub_stepper_cmd.publish(self.stepper_cmd)
@@ -157,11 +159,12 @@ class joy_controller():
                     # self.pub_pmp_state.publish(self.pmp_state)
 
                 if self.btn0.is_enabled(self.buttons[0]):
-                    self.task_shift = -1
-                elif self.btn2.is_enabled(self.buttons[2]):
                     self.task_shift = 1
+                elif self.btn2.is_enabled(self.buttons[2]):
+                    self.task_shift = -1
                 else:
                     self.task_shift = 0
+                # rospy.loginfo(self.task_shift)
                 self.pub_task_selector.publish(self.task_shift)
 
 
@@ -171,7 +174,7 @@ class joy_controller():
                     self.stepper_state.data = 8
                     self.pub_stepper_state.publish(self.stepper_state)
                     rospy.sleep(1)
-                    self.stepper_state.data = 0
+                    self.stepper_state.data = 1
                     self.pub_stepper_state.publish(self.stepper_state)
                 if self.btn8.is_enabled(self.buttons[8]):
                     self.pub_back_cmd.publish()
@@ -187,6 +190,7 @@ class joy_controller():
                 # rospy.loginfo(self.is_handy)
             if not len(self.buttons) == 0:
                 if self.btn9.is_enabled(self.buttons[9]):  # START
+                    # rospy.loginfo("nya")
                     self.pub_start_cmd.publish()
 
             self.r.sleep()
